@@ -8,17 +8,17 @@ struct arrayinfo {
 void* Cr_ArrayGrow(void* array, int size){
 	struct arrayinfo* ai;
 	if(array == CR_NULL){
-		ai = CR_MALLOC(sizeof(*ai) + size);
+		ai = Cr_Alloc(sizeof(*ai) + size);
 		ai->esize = size;
 		ai->length = 1;
 	}else{
 		struct arrayinfo* old = array;
 		old--;
 
-		ai = CR_MALLOC(sizeof(*ai) + old->esize * old->length + size);
-		CR_MEMCPY(ai, old, sizeof(*ai) + old->esize * old->length);
+		ai = Cr_Alloc(sizeof(*ai) + old->esize * old->length + size);
+		Cr_Copy(ai, old, sizeof(*ai) + old->esize * old->length);
 
-		CR_FREE(ai);
+		Cr_Free(ai);
 	}
 
 	return ai + 1;
@@ -38,5 +38,5 @@ void Cr_ArrayFreeBody(void* array){
 
 	ai--;
 
-	free(ai);
+	Cr_Free(ai);
 }

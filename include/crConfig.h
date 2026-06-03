@@ -15,5 +15,6 @@
 #define CR_NULL NULL
 
 #define CR_BUFSZ 1024
+#define CR_TOKSZ 256
 
 #endif

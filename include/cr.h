@@ -4,15 +4,14 @@
 #include <crConfig.h>
 
 typedef struct Cr_Interp Cr_Interp;
-typedef struct Cr_AST Cr_AST;
+typedef struct Cr_Token Cr_Token;
 
 struct Cr_Interp {
-	Cr_AST* ast;
 };
 
-struct Cr_AST {
-	Cr_AST* parent;
-	Cr_AST** children;
+struct Cr_Token {
+	int type;
+	char token[CR_TOKSZ];
 };
 
 /* core.c */
@@ -20,8 +19,13 @@ Cr_Interp* Cr_CreateInterp(void);
 void Cr_DeleteInterp(Cr_Interp* interp);
 void Cr_Eval(Cr_Interp* interp, const char* script);
 
-/* ast.c */
-void Cr_ASTConstruct(Cr_Interp* interp, Cr_AST* parent, const char* string);
+/* lexer.c */
+Cr_Token* Cr_Lex(const char* str);
+
+/* mem.c */
+void* Cr_Alloc(int size);
+void Cr_Free(void* ptr);
+void Cr_Copy(void* dst, const void* src, int size);
 
 /* array.c */
 #define Cr_ArrayPut(x, y) {(x) = Cr_ArrayGrow((x), sizeof(*x)); (x)[Cr_ArrayLength((x))] = (y);}
