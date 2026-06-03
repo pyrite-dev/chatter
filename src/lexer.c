@@ -20,26 +20,26 @@ Cr_Token* Cr_Lex(const char* str) {
 
 	if(strlen(str) == 0) return t;
 
-	if(t == CR_NULL && (str[0] == ' ' || str[0] == '\t' || str[0] == '\r' || str[0] == '\n')) {
+	if(t == CR_NULL && CR_IS_SEPARATOR(str[0])) {
 		t = Cr_Alloc(sizeof(*t));
 
 		for(i = 0; str[i] != 0; i++) {
-			if((str[0] == ' ' || str[0] == '\t') && str[i] != ' ' && str[i] != '\t') break;
-			if((str[0] == '\r' || str[0] == '\n') && str[i] != '\r' && str[i] != '\n') break;
+			if(!CR_IS_SEPARATOR(str[i])) break;
 		}
 
-		if(str[0] == ' ' || str[0] == '\t') {
-			t->type = CR_SPACE;
-		} else {
-			t->type = CR_NEWLINE;
-		}
+		t->type = CR_SEPARATOR;
 		Cr_Copy(t->token, str, i);
 	}
 
 	IF_MATCH(":=", CR_ASSIGN);
-	IF_MATCH("|", CR_LOCAL);
+	IF_MATCH("|", CR_BAR);
 	IF_MATCH(".", CR_PERIOD);
+	IF_MATCH("[", CR_BLOCK_BEGIN);
+	IF_MATCH("]", CR_BLOCK_END);
+	IF_MATCH("(", CR_PAR_BEGIN);
+	IF_MATCH(")", CR_PAR_END);
 
+	/* NOTE: appearantly some implementation allows newline after $... */
 	if(t == CR_NULL && str[0] == '$' && str[1] != '\r' && str[1] != '\n') {
 		t = Cr_Alloc(sizeof(*t));
 
@@ -47,7 +47,7 @@ Cr_Token* Cr_Lex(const char* str) {
 		Cr_Copy(t->token, str, 2);
 	}
 
-	if(t == CR_NULL && ((str[0] == '-' && CR_NUMBER(str[1])) || CR_NUMBER(str[0]))) {
+	if(t == CR_NULL && ((str[0] == '-' && CR_IS_NUMBER(str[1])) || CR_IS_NUMBER(str[0]))) {
 		int dot	  = 0;
 		int radix = 0;
 		int exp	  = 0;
@@ -67,7 +67,7 @@ Cr_Token* Cr_Lex(const char* str) {
 				radix++;
 				continue;
 			}
-			if(CR_NUMBER(str[i])) continue;
+			if(CR_IS_NUMBER(str[i])) continue;
 			break;
 		}
 
@@ -75,13 +75,13 @@ Cr_Token* Cr_Lex(const char* str) {
 		Cr_Copy(t->token, str, i);
 	}
 
-	if(t == CR_NULL && str[0] == '\'') {
+	if(t == CR_NULL && (str[0] == '\'' || str[0] == '"')) {
 		int q = 0;
 
 		t = Cr_Alloc(sizeof(*t));
 
 		for(i = 0; str[i] != 0; i++) {
-			if(str[i] == '\'') {
+			if(str[i] == str[0]) {
 				q = !q;
 
 				if(!q) {
@@ -91,16 +91,38 @@ Cr_Token* Cr_Lex(const char* str) {
 			}
 		}
 
-		t->type = CR_STRING;
+		t->type = str[0] == '\'' ? CR_STRING : CR_COMMENT;
 		Cr_Copy(t->token, str, i);
 	}
 
-	if(t == CR_NULL && CR_ALPHA(str[0])) {
+	if(t == CR_NULL && str[0] == '#' && (CR_CAN_BE_FIRST(str[1]) || str[1] == '\'')) {
+		int q = 0;
+
 		t = Cr_Alloc(sizeof(*t));
 
 		for(i = 1; str[i] != 0; i++) {
-			if(CR_ALPHASYM(str[i])) continue;
-			if(CR_NUMBER(str[i])) continue;
+			if(str[1] == '\'' && str[i] == '\'') {
+				q = !q;
+
+				if(!q) {
+					i++;
+					break;
+				}
+			} else if(str[1] != '\'' && !(CR_IS_ALPHASYM(str[i]) || CR_IS_NUMBER(str[i]))) {
+				break;
+			}
+		}
+
+		t->type = CR_SYMBOL;
+		Cr_Copy(t->token, str, i);
+	}
+
+	if(t == CR_NULL && CR_CAN_BE_FIRST(str[0])) {
+		t = Cr_Alloc(sizeof(*t));
+
+		for(i = 1; str[i] != 0; i++) {
+			if(CR_IS_ALPHASYM(str[i])) continue;
+			if(CR_IS_NUMBER(str[i])) continue;
 			break;
 		}
 
@@ -108,7 +130,20 @@ Cr_Token* Cr_Lex(const char* str) {
 		Cr_Copy(t->token, str, i);
 	}
 
-	if(t == CR_NULL && CR_SYMBOL(str[0])) {
+	if(t == CR_NULL && str[0] == ':' && CR_CAN_BE_FIRST(str[1])) {
+		t = Cr_Alloc(sizeof(*t));
+
+		for(i = 2; str[i] != 0; i++) {
+			if(CR_IS_ALPHASYM(str[i])) continue;
+			if(CR_IS_NUMBER(str[i])) continue;
+			break;
+		}
+
+		t->type = CR_BLOCK_ARG;
+		Cr_Copy(t->token, str, i);
+	}
+
+	if(t == CR_NULL && CR_IS_SYMBOL(str[0])) {
 		t = Cr_Alloc(sizeof(*t));
 
 		t->type = CR_IDENT;

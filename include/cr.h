@@ -11,17 +11,24 @@ struct Cr_Interp {
 
 enum CR_TOKEN {
 	CR_IDENT = 0,
-
 	CR_NUMBER,
 	CR_STRING,
 	CR_CHAR,
+	CR_SYMBOL,
 
-	CR_SPACE,
-	CR_NEWLINE,
+	/* ignorable */
+	CR_COMMENT,
+	CR_SEPARATOR,
 
+	/* control */
 	CR_ASSIGN,
-	CR_LOCAL,
-	CR_PERIOD
+	CR_BAR,
+	CR_PERIOD,
+	CR_BLOCK_BEGIN,
+	CR_BLOCK_END,
+	CR_BLOCK_ARG,
+	CR_PAR_BEGIN,
+	CR_PAR_END
 };
 
 struct Cr_Token {
@@ -29,10 +36,12 @@ struct Cr_Token {
 	char token[CR_TOKSZ];
 };
 
-#define CR_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
-#define CR_NUMBER(x) ('0' <= (x) && (x) <= '9')
-#define CR_SYMBOL(x) ((x) == '+' || (x) == '-' || (x) == '*' || (x) == '/' || (x) == '!' || (x) == '#' || (x) == '$' || (x) == '%' || (x) == '&' || (x) == '(' || (x) == ')' || (x) == '=' || (x) == '^' || (x) == '~' || (x) == '\\' || (x) == '@' || (x) == ':' || (x) == ',' || (x) == '<' || (x) == '>' || (x) == '?' || (x) == '_' || (x) == '\\')
-#define CR_ALPHASYM(x) (CR_ALPHA((x)) || CR_SYMBOL((x)))
+#define CR_IS_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
+#define CR_IS_NUMBER(x) ('0' <= (x) && (x) <= '9')
+#define CR_IS_SYMBOL(x) ((x) == '+' || (x) == '-' || (x) == '*' || (x) == '/' || (x) == '!' || (x) == '#' || (x) == '$' || (x) == '%' || (x) == '&' || (x) == '=' || (x) == '^' || (x) == '~' || (x) == '\\' || (x) == '@' || (x) == ':' || (x) == ',' || (x) == '<' || (x) == '>' || (x) == '?' || (x) == '_' || (x) == '\\')
+#define CR_IS_SEPARATOR(x) ((x) == ' ' || (x) == '\t' || (x) == '\r' || (x) == '\n')
+#define CR_IS_ALPHASYM(x) (CR_IS_ALPHA((x)) || CR_IS_SYMBOL((x)))
+#define CR_CAN_BE_FIRST(x) (CR_IS_ALPHA((x)) || (x) == '_')
 
 /* core.c */
 Cr_Interp* Cr_CreateInterp(void);
