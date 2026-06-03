@@ -5,6 +5,7 @@
 
 typedef struct Cr_Interp Cr_Interp;
 typedef struct Cr_Token	 Cr_Token;
+typedef struct Cr_AST Cr_AST;
 
 struct Cr_Interp {
 };
@@ -38,6 +39,9 @@ struct Cr_Token {
 	char token[CR_TOKSZ];
 };
 
+struct Cr_AST {
+};
+
 #define CR_IS_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
 #define CR_IS_NUMBER(x) ('0' <= (x) && (x) <= '9')
 #define CR_IS_SYMBOL(x) ((x) == '+' || (x) == '-' || (x) == '*' || (x) == '/' || (x) == '!' || (x) == '#' || (x) == '$' || (x) == '%' || (x) == '&' || (x) == '=' || (x) == '^' || (x) == '~' || (x) == '\\' || (x) == '@' || (x) == ':' || (x) == ',' || (x) == '<' || (x) == '>' || (x) == '?' || (x) == '_' || (x) == '\\')
@@ -53,12 +57,22 @@ void	   Cr_Eval(Cr_Interp* interp, const char* script);
 /* lexer.c */
 Cr_Token* Cr_Lex(const char* str);
 
+/* parser.c */
+Cr_AST* Cr_Parse(const char* str);
+
 /* mem.c */
 void* Cr_Alloc(int size);
 void  Cr_Free(void* ptr);
 void  Cr_Copy(void* dst, const void* src, int size);
 int   Cr_Length(const char* ptr);
 int   Cr_Equal(const void* a, const void* b, int size);
+
+/* debug.c */
+#ifdef DEBUG
+void Cr_Debug(const char* fmt, ...);
+#else
+#define Cr_Debug(x)
+#endif
 
 /* array.c */
 #define Cr_ArrayPut(x, y) \

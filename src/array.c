@@ -18,7 +18,7 @@ void* Cr_ArrayGrow(void* array, int size) {
 		ai = Cr_Alloc(sizeof(*ai) + old->esize * old->length + size);
 		Cr_Copy(ai, old, sizeof(*ai) + old->esize * old->length);
 
-		Cr_Free(ai);
+		Cr_Free(old);
 	}
 
 	return ai + 1;
@@ -33,7 +33,7 @@ int Cr_ArrayLength(void* array) {
 	return ai->length;
 }
 
-void Cr_ArrayFreeBody(void* array) {
+void Cr_ArrayDestroy(void* array) {
 	struct arrayinfo* ai = array;
 
 	ai--;
