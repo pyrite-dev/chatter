@@ -1,13 +1,13 @@
 #include <cr.h>
 #include <stdio.h>
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
 	Cr_Interp* interp;
-	FILE* f;
-	char* src;
-	int sz;
+	FILE*	   f;
+	char*	   src;
+	int	   sz;
 
-	if(argc != 2 || (f = fopen(argv[1], "rb")) == NULL){
+	if(argc != 2 || (f = fopen(argv[1], "rb")) == NULL) {
 		fprintf(stderr, "Usage: %s input\n", argv[0]);
 		return 1;
 	}
