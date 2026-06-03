@@ -34,8 +34,10 @@ Cr_Token* Cr_Lex(const char* str) {
 	IF_MATCH(":=", CR_ASSIGN);
 	IF_MATCH("|", CR_BAR);
 	IF_MATCH(".", CR_PERIOD);
+	IF_MATCH("#[", CR_BYTE_ARRAY_BEGIN);
 	IF_MATCH("[", CR_BLOCK_BEGIN);
 	IF_MATCH("]", CR_BLOCK_END);
+	IF_MATCH("#(", CR_ARRAY_BEGIN);
 	IF_MATCH("(", CR_PAR_BEGIN);
 	IF_MATCH(")", CR_PAR_END);
 

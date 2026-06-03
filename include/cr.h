@@ -27,6 +27,8 @@ enum CR_TOKEN {
 	CR_BLOCK_BEGIN,
 	CR_BLOCK_END,
 	CR_BLOCK_ARG,
+	CR_ARRAY_BEGIN, /* NOTE: this ends with CR_BLOCK_END */
+	CR_BYTE_ARRAY_BEGIN, /* NOTE: this ends with CR_PAR_END */
 	CR_PAR_BEGIN,
 	CR_PAR_END
 };
