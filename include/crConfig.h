@@ -12,6 +12,8 @@
 #define CR_MEMSET memset
 #define CR_MEMCPY memcpy
 
+#define CR_NULL NULL
+
 #define CR_BUFSZ 1024
 
 #endif

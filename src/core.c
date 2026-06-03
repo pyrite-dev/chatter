@@ -7,9 +7,12 @@ Cr_Interp* Cr_CreateInterp(void){
 }
 
 void Cr_DeleteInterp(Cr_Interp* interp){
-	free(interp);
+	CR_FREE(interp);
 }
 
 void Cr_Eval(Cr_Interp* interp, const char* script){
-	Cr_ASTConstruct(interp, script);
+	interp->ast = CR_MALLOC(sizeof(*interp->ast));
+	CR_MEMSET(interp->ast, 0, sizeof(*interp->ast));
+
+	Cr_ASTConstruct(interp, interp->ast, script);
 }
