@@ -52,7 +52,7 @@ Cr_Token* Cr_Lex(const char* str) {
 		t = Cr_Alloc(sizeof(*t));
 
 		for(i = 1; str[i] != 0; i++) {
-			if(dot == 0 && radix == 0 && str[i] == '.') {
+			if(dot == 0 && radix == 0 && str[i] == '.' && !CR_IS_SEPARATOR(str[i + 1])) {
 				dot++;
 				continue;
 			}
@@ -147,7 +147,9 @@ Cr_Token* Cr_Lex(const char* str) {
 		Cr_Copy(t->token, str, 1);
 	}
 
-	if(t != CR_NULL) {
+	if(t == CR_NULL) {
+		Cr_Debug("lexer: error token\n");
+	} else {
 		Cr_Debug("lexer: %d [%s]\n", t->type, t->token);
 	}
 
