@@ -5,13 +5,13 @@
 
 typedef struct Cr_Interp Cr_Interp;
 typedef struct Cr_Token	 Cr_Token;
-typedef struct Cr_AST Cr_AST;
+typedef struct Cr_AST	 Cr_AST;
 
 struct Cr_Interp {
 };
 
 enum CR_TOKEN {
-	CR_IDENT = 0,
+	CR_IDENT = 1,
 	CR_NUMBER,
 	CR_STRING,
 	CR_CHAR,
@@ -28,7 +28,7 @@ enum CR_TOKEN {
 	CR_BLOCK_BEGIN,
 	CR_BLOCK_END,
 	CR_BLOCK_ARG,
-	CR_ARRAY_BEGIN, /* NOTE: this ends with CR_BLOCK_END */
+	CR_ARRAY_BEGIN,	     /* NOTE: this ends with CR_BLOCK_END */
 	CR_BYTE_ARRAY_BEGIN, /* NOTE: this ends with CR_PAR_END */
 	CR_PAR_BEGIN,
 	CR_PAR_END
@@ -40,6 +40,8 @@ struct Cr_Token {
 };
 
 struct Cr_AST {
+	Cr_AST*	 parent;
+	Cr_AST** children;
 };
 
 #define CR_IS_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
@@ -58,7 +60,7 @@ void	   Cr_Eval(Cr_Interp* interp, const char* script);
 Cr_Token* Cr_Lex(const char* str);
 
 /* parser.c */
-Cr_AST* Cr_Parse(const char* str);
+Cr_AST* Cr_Parse(Cr_AST* parent, const char* str);
 
 /* mem.c */
 void* Cr_Alloc(int size);
@@ -77,8 +79,8 @@ void Cr_Debug(const char* fmt, ...);
 /* array.c */
 #define Cr_ArrayPut(x, y) \
 	{ \
-		(x)			 = Cr_ArrayGrow((x), sizeof(*x)); \
-		(x)[Cr_ArrayLength((x))] = (y); \
+		(x)			     = Cr_ArrayGrow((x), sizeof(*x)); \
+		(x)[Cr_ArrayLength((x)) - 1] = (y); \
 	}
 #define Cr_ArrayFree(x) \
 	{ \

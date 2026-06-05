@@ -18,6 +18,8 @@ void* Cr_ArrayGrow(void* array, int size) {
 		ai = Cr_Alloc(sizeof(*ai) + old->esize * old->length + size);
 		Cr_Copy(ai, old, sizeof(*ai) + old->esize * old->length);
 
+		ai->length++;
+
 		Cr_Free(old);
 	}
 
@@ -27,7 +29,7 @@ void* Cr_ArrayGrow(void* array, int size) {
 int Cr_ArrayLength(void* array) {
 	struct arrayinfo* ai = array;
 
-	if(array == CR_NULL) return 1;
+	if(array == CR_NULL) return 0;
 	ai--;
 
 	return ai->length;
@@ -36,6 +38,7 @@ int Cr_ArrayLength(void* array) {
 void Cr_ArrayDestroy(void* array) {
 	struct arrayinfo* ai = array;
 
+	if(array == CR_NULL) return;
 	ai--;
 
 	Cr_Free(ai);

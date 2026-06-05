@@ -1,10 +1,5 @@
 #include <cr.h>
 
-struct rule {
-	char token[CR_TOKSZ];
-	int  match;
-};
-
 #define MATCH(x) ((Cr_Length(str) >= strlen((x))) && Cr_Equal(str, (x), strlen((x))))
 #define IF_MATCH(x, y) \
 	if(t == CR_NULL && MATCH((x))) { \
@@ -152,7 +147,7 @@ Cr_Token* Cr_Lex(const char* str) {
 		Cr_Copy(t->token, str, 1);
 	}
 
-	if(t != CR_NULL){
+	if(t != CR_NULL) {
 		Cr_Debug("lexer: %d [%s]\n", t->type, t->token);
 	}
 
