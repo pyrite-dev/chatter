@@ -22,25 +22,25 @@ Cr_Token* Cr_Lex(const char* str) {
 			if(!CR_IS_SEPARATOR(str[i])) break;
 		}
 
-		t->type = CR_SEPARATOR;
+		t->type = CR_L_SEPARATOR;
 		Cr_Copy(t->token, str, i);
 	}
 
-	IF_MATCH(":=", CR_ASSIGN);
-	IF_MATCH("|", CR_BAR);
-	IF_MATCH(".", CR_PERIOD);
-	IF_MATCH("#[", CR_BYTE_ARRAY_BEGIN);
-	IF_MATCH("[", CR_BLOCK_BEGIN);
-	IF_MATCH("]", CR_BLOCK_END);
-	IF_MATCH("#(", CR_ARRAY_BEGIN);
-	IF_MATCH("(", CR_PAR_BEGIN);
-	IF_MATCH(")", CR_PAR_END);
+	IF_MATCH(":=", CR_L_ASSIGN);
+	IF_MATCH("|", CR_L_BAR);
+	IF_MATCH(".", CR_L_PERIOD);
+	IF_MATCH("#[", CR_L_BYTE_ARRAY_BEGIN);
+	IF_MATCH("[", CR_L_BLOCK_BEGIN);
+	IF_MATCH("]", CR_L_BLOCK_END);
+	IF_MATCH("#(", CR_L_ARRAY_BEGIN);
+	IF_MATCH("(", CR_L_PAR_BEGIN);
+	IF_MATCH(")", CR_L_PAR_END);
 
 	/* NOTE: appearantly some implementation allows newline after $... */
 	if(t == CR_NULL && str[0] == '$' && str[1] != '\r' && str[1] != '\n') {
 		t = Cr_Alloc(sizeof(*t));
 
-		t->type = CR_CHAR;
+		t->type = CR_L_CHAR;
 		Cr_Copy(t->token, str, 2);
 	}
 
@@ -68,7 +68,7 @@ Cr_Token* Cr_Lex(const char* str) {
 			break;
 		}
 
-		t->type = CR_NUMBER;
+		t->type = CR_L_NUMBER;
 		Cr_Copy(t->token, str, i);
 	}
 
@@ -88,7 +88,7 @@ Cr_Token* Cr_Lex(const char* str) {
 			}
 		}
 
-		t->type = str[0] == '\'' ? CR_STRING : CR_COMMENT;
+		t->type = str[0] == '\'' ? CR_L_STRING : CR_L_COMMENT;
 		Cr_Copy(t->token, str, i);
 	}
 
@@ -110,7 +110,7 @@ Cr_Token* Cr_Lex(const char* str) {
 			}
 		}
 
-		t->type = CR_SYMBOL;
+		t->type = CR_L_SYMBOL;
 		Cr_Copy(t->token, str, i);
 	}
 
@@ -123,7 +123,7 @@ Cr_Token* Cr_Lex(const char* str) {
 			break;
 		}
 
-		t->type = CR_IDENT;
+		t->type = CR_L_IDENT;
 		Cr_Copy(t->token, str, i);
 	}
 
@@ -136,14 +136,14 @@ Cr_Token* Cr_Lex(const char* str) {
 			break;
 		}
 
-		t->type = CR_BLOCK_ARG;
+		t->type = CR_L_BLOCK_ARG;
 		Cr_Copy(t->token, str, i);
 	}
 
 	if(t == CR_NULL && CR_IS_SYMBOL(str[0])) {
 		t = Cr_Alloc(sizeof(*t));
 
-		t->type = CR_IDENT;
+		t->type = CR_L_IDENT;
 		Cr_Copy(t->token, str, 1);
 	}
 

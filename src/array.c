@@ -43,3 +43,29 @@ void Cr_ArrayDestroy(void* array) {
 
 	Cr_Free(ai);
 }
+
+void* Cr_ArrayShrink(void* array, int index) {
+	struct arrayinfo* old = array;
+	struct arrayinfo* ai;
+	int		  i;
+	int		  n = 0;
+
+	if(array == CR_NULL) return CR_NULL;
+	old--;
+
+	ai = Cr_Alloc(sizeof(*ai) + (old->length - 1) * old->esize);
+	Cr_Copy(ai, old, sizeof(*ai));
+
+	for(i = 0; i < ai->length; i++) {
+		if(i != index) {
+			Cr_Copy((unsigned char*)(ai + 1) + n * ai->esize, (unsigned char*)(old + 1) + i * ai->esize, ai->esize);
+			n++;
+		}
+	}
+
+	ai->length--;
+
+	Cr_Free(old);
+
+	return ai + 1;
+}

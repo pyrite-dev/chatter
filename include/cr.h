@@ -10,28 +10,36 @@ typedef struct Cr_AST	 Cr_AST;
 struct Cr_Interp {
 };
 
-enum CR_TOKEN {
-	CR_IDENT = 1,
-	CR_NUMBER,
-	CR_STRING,
-	CR_CHAR,
-	CR_SYMBOL,
+enum CR_LEXER_TOKEN {
+	CR_L_IDENT = 1,
+	CR_L_NUMBER,
+	CR_L_STRING,
+	CR_L_CHAR,
+	CR_L_SYMBOL,
 
 	/* ignorable */
-	CR_COMMENT,
-	CR_SEPARATOR,
+	CR_L_COMMENT,
+	CR_L_SEPARATOR,
 
 	/* control */
-	CR_ASSIGN,
-	CR_BAR,
-	CR_PERIOD,
-	CR_BLOCK_BEGIN,
-	CR_BLOCK_END,
-	CR_BLOCK_ARG,
-	CR_ARRAY_BEGIN,	     /* NOTE: this ends with CR_BLOCK_END */
-	CR_BYTE_ARRAY_BEGIN, /* NOTE: this ends with CR_PAR_END */
-	CR_PAR_BEGIN,
-	CR_PAR_END
+	CR_L_ASSIGN,
+	CR_L_BAR,
+	CR_L_PERIOD,
+	CR_L_BLOCK_BEGIN,
+	CR_L_BLOCK_END,
+	CR_L_BLOCK_ARG,
+	CR_L_ARRAY_BEGIN,      /* NOTE: this ends with CR_L_BLOCK_END */
+	CR_L_BYTE_ARRAY_BEGIN, /* NOTE: this ends with CR_L_PAR_END */
+	CR_L_PAR_BEGIN,
+	CR_L_PAR_END
+};
+
+enum CR_PARSER_TOKEN {
+	CR_P_PROGRAM = 1,
+	CR_P_ITEM,
+	CR_P_BLOCK,
+	CR_P_ASSIGN,
+	CR_P_MESSAGE
 };
 
 struct Cr_Token {
@@ -40,6 +48,7 @@ struct Cr_Token {
 };
 
 struct Cr_AST {
+	int	 type;
 	Cr_AST*	 parent;
 	Cr_AST** children;
 };
@@ -61,6 +70,7 @@ Cr_Token* Cr_Lex(const char* str);
 
 /* parser.c */
 Cr_AST* Cr_Parse(Cr_AST* parent, const char* str);
+void	Cr_DeleteAST(Cr_AST* root);
 
 /* mem.c */
 void* Cr_Alloc(int size);
@@ -87,9 +97,14 @@ void Cr_Debug(const char* fmt, ...);
 		Cr_ArrayDestroy((x)); \
 		(x) = CR_NULL; \
 	}
+#define Cr_ArrayDelete(x, i) \
+	{ \
+		(x) = Cr_ArrayShrink((x), (i)); \
+	}
 
 void* Cr_ArrayGrow(void* array, int size);
 int   Cr_ArrayLength(void* array);
-void  Cr_ArrayDestroy(void* array); /* do not use this, use Cr_ArrayFree instead */
+void  Cr_ArrayDestroy(void* array);	      /* do not use this, use Cr_ArrayFree instead */
+void* Cr_ArrayShrink(void* array, int index); /* do not use this, use Cr_ArrayDelete instead */
 
 #endif

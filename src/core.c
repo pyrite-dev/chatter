@@ -13,5 +13,5 @@ void Cr_DeleteInterp(Cr_Interp* interp) {
 void Cr_Eval(Cr_Interp* interp, const char* script) {
 	Cr_AST* parent = Cr_Alloc(sizeof(*parent));
 
-	Cr_Parse(parent, script);
+	Cr_Debug("core: %p\n", Cr_Parse(parent, script));
 }
