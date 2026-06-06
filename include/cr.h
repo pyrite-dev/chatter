@@ -25,6 +25,7 @@ enum CR_LEXER_TOKEN {
 	CR_L_ASSIGN,
 	CR_L_BAR,
 	CR_L_PERIOD,
+	CR_L_SEMICOLON,
 	CR_L_BLOCK_BEGIN,
 	CR_L_BLOCK_END,
 	CR_L_BLOCK_ARG,
@@ -40,7 +41,8 @@ enum CR_PARSER_TOKEN {
 	CR_P_GROUP,
 	CR_P_ASSIGN,
 	CR_P_MESSAGE,
-	CR_P_ITEM
+	CR_P_ITEM,
+	CR_P_BLOCK_ARG
 };
 
 struct Cr_Token {
@@ -95,6 +97,7 @@ void Cr_Concat(char* dst, const char* src);
 int  Cr_IsUnary(const char* op);
 int  Cr_IsBinary(const char* op);
 int  Cr_IsKeyword(const char* op);
+int  Cr_IsReceiver(const char* op);
 void Cr_SortMsgRecv(Cr_AST* ast);
 
 /* debug.c */

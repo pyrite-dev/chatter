@@ -31,6 +31,7 @@ Cr_Token* Cr_Lex(const char* str) {
 	IF_MATCH(":=", CR_L_ASSIGN);
 	IF_MATCH("|", CR_L_BAR);
 	IF_MATCH(".", CR_L_PERIOD);
+	IF_MATCH(";", CR_L_SEMICOLON);
 	IF_MATCH("#[", CR_L_BYTE_ARRAY_BEGIN);
 	IF_MATCH("[", CR_L_BLOCK_BEGIN);
 	IF_MATCH("]", CR_L_BLOCK_END);
@@ -150,6 +151,8 @@ Cr_Token* Cr_Lex(const char* str) {
 
 		t->type = CR_L_BLOCK_ARG;
 		Cr_Copy(t->token, str, i);
+
+		Cr_Debug("%s\n", t->token);
 	}
 
 	if(t == CR_NULL && CR_IS_SYMBOL(str[0])) {
