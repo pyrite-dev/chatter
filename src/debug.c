@@ -16,6 +16,14 @@ static int* debugAST(int n, int* last, Cr_AST* ast) {
 	char bar[1024];
 	char bar2[1024];
 	int  i;
+	const char* g[] = {
+		"",
+		"program",
+		"block",
+		"assign",
+		"message",
+		"item"
+	};
 
 	bar[0]	= 0;
 	bar2[0] = 0;
@@ -32,13 +40,13 @@ static int* debugAST(int n, int* last, Cr_AST* ast) {
 		}
 	}
 
-	Cr_Debug("parser: %s%d\n", bar, ast->type);
+	Cr_Debug("parser: %s%s\n", bar, g[ast->type]);
 	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
 		last[n + 1] = i == (Cr_ArrayLength(ast->children) - 1);
 		debugAST(n + 1, last, ast->children[i]);
 	}
 
-	if(n > 0 && last[n]) {
+	if(n > 0 && last[n] && Cr_ArrayLength(ast->children) == 0) {
 		Cr_Debug("parser: %s\n", bar2);
 	}
 }

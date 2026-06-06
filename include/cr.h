@@ -36,15 +36,15 @@ enum CR_LEXER_TOKEN {
 
 enum CR_PARSER_TOKEN {
 	CR_P_PROGRAM = 1,
-	CR_P_ITEM,
 	CR_P_BLOCK,
 	CR_P_ASSIGN,
-	CR_P_MESSAGE
+	CR_P_MESSAGE,
+	CR_P_ITEM
 };
 
 struct Cr_Token {
 	int  type;
-	char token[CR_TOKSZ];
+	char token[CR_TOKSZ + 1];
 };
 
 struct Cr_AST {
@@ -76,8 +76,11 @@ void	Cr_DeleteAST(Cr_AST* root);
 void* Cr_Alloc(int size);
 void  Cr_Free(void* ptr);
 void  Cr_Copy(void* dst, const void* src, int size);
-int   Cr_Length(const char* ptr);
 int   Cr_Equal(const void* a, const void* b, int size);
+
+/* string.c */
+void Cr_Escape(char* dst, const char* src);
+int   Cr_Length(const char* ptr);
 
 /* debug.c */
 #ifdef DEBUG
