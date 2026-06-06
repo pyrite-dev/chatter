@@ -1,24 +1,11 @@
 #include <cr.h>
 
-#define NEW_AST Cr_Alloc(sizeof(Cr_AST))
-
-static void sortMsgRecv(Cr_AST* ast) {
-	int i;
-
-	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
-		sortMsgRecv(ast->children[i]);
-	}
-
-	if(ast->type == CR_P_MESSAGE) {
-	}
-}
-
 Cr_AST* Cr_Parse(const char* script) {
 	Cr_Token*  t;
 	int	   n	    = 0;
 	Cr_Token** ts	    = CR_NULL;
 	Cr_Token** fl	    = CR_NULL; /* free list */
-	Cr_AST*	   top	    = NEW_AST;
+	Cr_AST*	   top	    = CR_NEW_AST;
 	Cr_AST*	   current  = top;
 	int	   skip_sep = 0;
 	int	   bad	    = 0;
@@ -66,7 +53,7 @@ Cr_AST* Cr_Parse(const char* script) {
 			}
 
 			parent		= current;
-			current		= NEW_AST;
+			current		= CR_NEW_AST;
 			current->type	= CR_P_ASSIGN;
 			current->parent = parent;
 
@@ -81,7 +68,7 @@ Cr_AST* Cr_Parse(const char* script) {
 			Cr_AST* parent;
 
 			parent		= current;
-			current		= NEW_AST;
+			current		= CR_NEW_AST;
 			current->type	= CR_P_BLOCK;
 			current->parent = parent;
 
@@ -90,7 +77,7 @@ Cr_AST* Cr_Parse(const char* script) {
 			Cr_AST* parent;
 
 			parent		= current;
-			current		= NEW_AST;
+			current		= CR_NEW_AST;
 			current->type	= CR_P_GROUP;
 			current->parent = parent;
 
@@ -107,7 +94,7 @@ Cr_AST* Cr_Parse(const char* script) {
 			Cr_AST* parent = current;
 
 			if(current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_GROUP) {
-				current		= NEW_AST;
+				current		= CR_NEW_AST;
 				current->type	= CR_P_MESSAGE;
 				current->parent = parent;
 
@@ -132,8 +119,9 @@ Cr_AST* Cr_Parse(const char* script) {
 
 				if(ts[i]->type == CR_L_SEPARATOR) continue;
 
-				new_ast		= NEW_AST;
-				new_ast->type	= CR_P_ITEM;
+				new_ast	      = CR_NEW_AST;
+				new_ast->type = CR_P_ITEM;
+				Cr_Copy(new_ast->token, ts[i]->token, Cr_Length(ts[i]->token));
 				new_ast->parent = current;
 
 				Cr_ArrayPut(current->children, new_ast);
@@ -168,10 +156,6 @@ Cr_AST* Cr_Parse(const char* script) {
 	if(bad) {
 		Cr_DeleteAST(top);
 		top = CR_NULL;
-	}
-
-	if(top != CR_NULL) {
-		sortMsgRecv(top);
 	}
 
 	return top;

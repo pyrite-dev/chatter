@@ -50,16 +50,20 @@ struct Cr_Token {
 
 struct Cr_AST {
 	int	 type;
+	char	 token[CR_TOKSZ + 1];
 	Cr_AST*	 parent;
 	Cr_AST** children;
 };
 
 #define CR_IS_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
 #define CR_IS_NUMBER(x) ('0' <= (x) && (x) <= '9')
+#define CR_IS_ALPHANUM(x) (CR_IS_ALPHA((x)) || CR_IS_NUMBER((x)))
 #define CR_IS_SYMBOL(x) ((x) == '+' || (x) == '-' || (x) == '*' || (x) == '/' || (x) == '!' || (x) == '#' || (x) == '$' || (x) == '%' || (x) == '&' || (x) == '=' || (x) == '^' || (x) == '~' || (x) == '\\' || (x) == '@' || (x) == ':' || (x) == ',' || (x) == '<' || (x) == '>' || (x) == '?' || (x) == '_' || (x) == '\\')
-#define CR_IS_SEPARATOR(x) ((x) == ' ' || (x) == '\t' || (x) == '\r' || (x) == '\n')
 #define CR_IS_ALPHASYM(x) (CR_IS_ALPHA((x)) || CR_IS_SYMBOL((x)))
+#define CR_IS_SEPARATOR(x) ((x) == ' ' || (x) == '\t' || (x) == '\r' || (x) == '\n')
 #define CR_CAN_BE_FIRST(x) (CR_IS_ALPHA((x)) || (x) == '_')
+
+#define CR_NEW_AST Cr_Alloc(sizeof(Cr_AST))
 
 /* core.c */
 Cr_Interp* Cr_CreateInterp(void);
@@ -81,7 +85,15 @@ int   Cr_Equal(const void* a, const void* b, int size);
 
 /* string.c */
 void Cr_Escape(char* dst, const char* src);
+void Cr_EscapeConcat(char* dst, const char* src);
 int  Cr_Length(const char* ptr);
+void Cr_Concat(char* dst, const char* src);
+
+/* op.c */
+int  Cr_IsUnary(const char* op);
+int  Cr_IsBinary(const char* op);
+int  Cr_IsKeyword(const char* op);
+void Cr_SortMsgRecv(Cr_AST* ast);
 
 /* debug.c */
 #ifdef DEBUG
@@ -107,10 +119,15 @@ void Cr_DebugAST(Cr_AST* root);
 	{ \
 		(x) = Cr_ArrayShrink((x), (i)); \
 	}
+#define Cr_ArrayDeleteMatch(x, e) \
+	{ \
+		(x) = Cr_ArrayShrinkMatch((x), &(e)); \
+	}
 
 void* Cr_ArrayGrow(void* array, int size);
 int   Cr_ArrayLength(void* array);
-void  Cr_ArrayDestroy(void* array);	      /* do not use this, use Cr_ArrayFree instead */
-void* Cr_ArrayShrink(void* array, int index); /* do not use this, use Cr_ArrayDelete instead */
+void  Cr_ArrayDestroy(void* array);		       /* do not use this, use Cr_ArrayFree instead */
+void* Cr_ArrayShrink(void* array, int index);	       /* do not use this, use Cr_ArrayDelete instead */
+void* Cr_ArrayShrinkMatch(void* array, void* element); /* do not use this, use Cr_ArrayDeleteMatch instead */
 
 #endif

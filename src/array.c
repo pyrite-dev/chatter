@@ -69,3 +69,28 @@ void* Cr_ArrayShrink(void* array, int index) {
 
 	return ai + 1;
 }
+
+void* Cr_ArrayShrinkMatch(void* array, void* element) {
+	struct arrayinfo* ai = array;
+	int		  esize;
+	unsigned char*	  b = array;
+	int		  i;
+
+	if(array == CR_NULL) return CR_NULL;
+	ai--;
+
+	esize = ai->esize;
+
+	for(i = 0; i < Cr_ArrayLength(array); i++) {
+		if(Cr_Equal(b, element, esize)) {
+			Cr_ArrayDelete(array, i);
+			i = -1;
+			b = array;
+			continue;
+		}
+
+		b += esize;
+	}
+
+	return array;
+}

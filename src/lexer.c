@@ -1,6 +1,6 @@
 #include <cr.h>
 
-#define MATCH(x) ((Cr_Length(str) >= strlen((x))) && Cr_Equal(str, (x), strlen((x))))
+#define MATCH(x) ((Cr_Length(str) >= Cr_Length((x))) && Cr_Equal(str, (x), Cr_Length((x))))
 #define IF_MATCH(x, y) \
 	if(t == CR_NULL && MATCH((x))) { \
 		t = Cr_Alloc(sizeof(*t)); \
@@ -13,7 +13,7 @@ Cr_Token* Cr_Lex(const char* str) {
 	int	  i;
 	Cr_Token* t = CR_NULL;
 
-	if(strlen(str) == 0) return t;
+	if(Cr_Length(str) == 0) return t;
 
 	if(t == CR_NULL && CR_IS_SEPARATOR(str[0])) {
 		t = Cr_Alloc(sizeof(*t));
