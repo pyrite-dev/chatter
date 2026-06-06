@@ -11,4 +11,43 @@ void Cr_Debug(const char* fmt, ...) {
 	vfprintf(stderr, fmt, va);
 	va_end(va);
 }
+
+static int* debugAST(int n, int* last, Cr_AST* ast) {
+	char bar[1024];
+	char bar2[1024];
+	int  i;
+
+	bar[0]	= 0;
+	bar2[0] = 0;
+
+	for(int i = 0; i < n; i++) {
+		if(i == (n - 1)) {
+			strcat(bar, "+-");
+		} else if(last[i + 1]) {
+			strcat(bar, "  ");
+			strcat(bar2, "  ");
+		} else {
+			strcat(bar, "| ");
+			strcat(bar2, "| ");
+		}
+	}
+
+	Cr_Debug("parser: %s%d\n", bar, ast->type);
+	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
+		last[n + 1] = i == (Cr_ArrayLength(ast->children) - 1);
+		debugAST(n + 1, last, ast->children[i]);
+	}
+
+	if(n > 0 && last[n]) {
+		Cr_Debug("parser: %s\n", bar2);
+	}
+}
+
+void Cr_DebugAST(Cr_AST* root) {
+	int n[512];
+
+	n[0] = 0;
+
+	debugAST(0, n, root);
+}
 #endif

@@ -69,7 +69,7 @@ void	   Cr_Eval(Cr_Interp* interp, const char* script);
 Cr_Token* Cr_Lex(const char* str);
 
 /* parser.c */
-Cr_AST* Cr_Parse(Cr_AST* parent, const char* str);
+Cr_AST* Cr_Parse(const char* str);
 void	Cr_DeleteAST(Cr_AST* root);
 
 /* mem.c */
@@ -82,8 +82,10 @@ int   Cr_Equal(const void* a, const void* b, int size);
 /* debug.c */
 #ifdef DEBUG
 void Cr_Debug(const char* fmt, ...);
+void Cr_DebugAST(Cr_AST* root);
 #else
-#define Cr_Debug(x)
+#define Cr_Debug(x, ...)
+#define Cr_DebugAST(root)
 #endif
 
 /* array.c */

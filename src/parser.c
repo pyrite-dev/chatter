@@ -2,7 +2,7 @@
 
 #define NEW_AST Cr_Alloc(sizeof(Cr_AST))
 
-Cr_AST* Cr_Parse(Cr_AST* parent, const char* script) {
+Cr_AST* Cr_Parse(const char* script) {
 	Cr_Token*  t;
 	int	   n	    = 0;
 	Cr_Token** ts	    = CR_NULL;
