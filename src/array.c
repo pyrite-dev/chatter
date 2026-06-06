@@ -63,7 +63,7 @@ void* Cr_ArrayShrink(void* array, int index) {
 		}
 	}
 
-	ai->length--;
+	ai->length = n;
 
 	Cr_Free(old);
 

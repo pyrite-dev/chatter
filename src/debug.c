@@ -20,6 +20,7 @@ static int* debugAST(int n, int* last, Cr_AST* ast) {
 	    "",
 	    "program",
 	    "block",
+	    "group",
 	    "assign",
 	    "message",
 	    "item"};
