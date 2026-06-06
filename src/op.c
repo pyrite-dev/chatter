@@ -39,41 +39,47 @@ int Cr_IsReceiver(const char* op) {
 	return !(Cr_IsBinary(op) || Cr_IsKeyword(op));
 }
 
-void Cr_SortMsgRecv(Cr_AST* ast) {
+void Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 	int i;
 
-	if(ast->type == CR_P_MESSAGE) {
+	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
+		if(ast->children[i]->type == CR_P_MESSAGE && Cr_ArrayLength(ast->children[i]->children) == 0) {
+			Cr_ArrayDelete(ast->children, i);
+			i--;
+		} else {
+			Cr_SortAndCleanMsgRecv(ast->children[i]);
+		}
+	}
+
+	if(ast->type == CR_P_MESSAGE || ast->type == CR_P_ASSIGN) {
+		Cr_AST* old;
 		Cr_AST* receiver;
 
 		if(Cr_ArrayLength(ast->children) < 1) return;
 
 		/* unary */
 		for(i = 1; i < Cr_ArrayLength(ast->children); i++) {
-			if(Cr_ArrayLength(ast->children) <= 2) break;
-			receiver = ast->children[i - 1];
-			if(receiver->type != CR_P_BLOCK && receiver->type != CR_P_GROUP && !Cr_IsReceiver(receiver->token)) continue;
-			if(Cr_IsUnary(ast->children[i]->token)) {
-				Cr_AST* old = receiver;
-				Cr_AST* c   = ast->children[i];
-				int	j;
+			if(Cr_ArrayLength(ast->children) <= 1) break;
 
-				receiver	 = CR_NEW_AST;
-				receiver->type	 = CR_P_MESSAGE;
-				receiver->parent = old->parent;
+			receiver = ast->children[i - 1];
+			if(receiver->type != CR_P_BLOCK && receiver->type != CR_P_GROUP && receiver->type != CR_P_MESSAGE && !Cr_IsReceiver(receiver->token)) continue;
+			if(Cr_IsUnary(ast->children[i]->token)) {
+				Cr_AST* c = ast->children[i];
+
+				old = receiver;
+
+				receiver       = CR_NEW_AST;
+				receiver->type = CR_P_MESSAGE;
+				Cr_Copy(receiver->token, c->token, Cr_Length(c->token));
+				receiver->parent = ast;
 
 				Cr_ArrayPut(receiver->children, old);
-				Cr_ArrayPut(receiver->children, c);
+
+				ast->children[i - 1] = receiver;
 
 				Cr_ArrayDeleteMatch(receiver->parent->children, c);
-				for(j = 0; j < Cr_ArrayLength(receiver->parent->children); j++) {
-					if(receiver->parent->children[j] == old) {
-						receiver->parent->children[j] = receiver;
-						break;
-					}
-				}
 
-				old->parent = receiver;
-				c->parent   = receiver;
+				Cr_DeleteAST(c);
 
 				i--;
 			}
@@ -81,43 +87,39 @@ void Cr_SortMsgRecv(Cr_AST* ast) {
 
 		/* binary */
 		for(i = 1; i < Cr_ArrayLength(ast->children); i += 2) {
-			if(Cr_ArrayLength(ast->children) <= 3) break;
+			if(Cr_ArrayLength(ast->children) <= 2) break;
 
 			receiver = ast->children[i - 1];
-			if(receiver->type != CR_P_BLOCK && receiver->type != CR_P_GROUP && !Cr_IsReceiver(receiver->token)) continue;
+			if(receiver->type != CR_P_BLOCK && receiver->type != CR_P_GROUP && receiver->type != CR_P_MESSAGE && !Cr_IsReceiver(receiver->token)) continue;
 			if(Cr_IsBinary(ast->children[i]->token)) {
-				Cr_AST* old = receiver;
-				Cr_AST* c   = ast->children[i];
-				Cr_AST* c2  = ast->children[i + 1];
-				int	j;
+				Cr_AST* c = ast->children[i];
+				Cr_AST* a = ast->children[i + 1];
 
-				receiver	 = CR_NEW_AST;
-				receiver->type	 = CR_P_MESSAGE;
-				receiver->parent = old->parent;
+				old = receiver;
+
+				receiver       = CR_NEW_AST;
+				receiver->type = CR_P_MESSAGE;
+				Cr_Copy(receiver->token, c->token, Cr_Length(c->token));
+				receiver->parent = ast;
 
 				Cr_ArrayPut(receiver->children, old);
-				Cr_ArrayPut(receiver->children, c);
-				Cr_ArrayPut(receiver->children, c2);
+				Cr_ArrayPut(receiver->children, a);
+
+				ast->children[i - 1] = receiver;
 
 				Cr_ArrayDeleteMatch(receiver->parent->children, c);
-				Cr_ArrayDeleteMatch(receiver->parent->children, c2);
-				for(j = 0; j < Cr_ArrayLength(receiver->parent->children); j++) {
-					if(receiver->parent->children[j] == old) {
-						receiver->parent->children[j] = receiver;
-						break;
-					}
-				}
+				Cr_ArrayDeleteMatch(receiver->parent->children, a);
 
-				old->parent = receiver;
-				c->parent   = receiver;
-				c2->parent  = receiver;
+				Cr_DeleteAST(c);
 
 				i -= 2;
 			}
 		}
-	}
 
-	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
-		Cr_SortMsgRecv(ast->children[i]);
+		if(ast->type == CR_P_MESSAGE && ast->children[0]->type == CR_P_MESSAGE) {
+			old = ast->children[0];
+			Cr_Copy(ast, old, sizeof(*ast));
+			Cr_Free(old);
+		}
 	}
 }

@@ -98,7 +98,7 @@ int  Cr_IsUnary(const char* op);
 int  Cr_IsBinary(const char* op);
 int  Cr_IsKeyword(const char* op);
 int  Cr_IsReceiver(const char* op);
-void Cr_SortMsgRecv(Cr_AST* ast);
+void Cr_SortAndCleanMsgRecv(Cr_AST* ast);
 
 /* debug.c */
 #ifdef DEBUG

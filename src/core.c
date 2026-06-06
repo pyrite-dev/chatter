@@ -14,7 +14,7 @@ void Cr_Eval(Cr_Interp* interp, const char* script) {
 	Cr_AST* ast = Cr_Parse(script);
 
 	if(ast != CR_NULL) {
-		Cr_SortMsgRecv(ast);
+		Cr_SortAndCleanMsgRecv(ast);
 		Cr_DebugAST(ast);
 		Cr_DeleteAST(ast);
 	}

@@ -17,6 +17,7 @@ Cr_AST* Cr_Parse(const char* script) {
 		int l	     = Cr_ArrayLength(ts);
 		int consumed = 1;
 		int j;
+		int goup = 0;
 
 		if(t == CR_LEX_ERROR) {
 			bad = 1;
@@ -37,38 +38,29 @@ Cr_AST* Cr_Parse(const char* script) {
 
 		if(skip_sep) {
 		} else if(ts[l]->type == CR_L_ASSIGN) {
-			Cr_Token* lt = CR_NULL;
-			Cr_AST*	  parent;
-
 			Cr_Debug("parser: assign\n");
 
-			if(current->type == CR_P_MESSAGE) {
-				Cr_AST* d = current;
+			if(current->type == CR_P_MESSAGE && Cr_ArrayLength(current->children) > 0 && current->children[0]->type == CR_P_ITEM) {
+				Cr_AST* c = current->children[0];
 
-				current = current->parent;
+				Cr_Copy(current->token, c->token, Cr_Length(c->token));
 
-				for(i = 0; i < Cr_ArrayLength(current->children); i++) {
-					if(current->children[i] == d) {
-						Cr_ArrayDelete(current->children, i);
-						break;
-					}
-				}
+				Cr_DeleteAST(c);
+				Cr_ArrayDelete(current->children, 0);
 
-				Cr_DeleteAST(d);
+				current->type = CR_P_ASSIGN;
+			} else {
+				Cr_Debug("parser: bad assign\n");
+
+				bad = 1;
+				break;
 			}
 
-			parent		= current;
-			current		= CR_NEW_AST;
-			current->type	= CR_P_ASSIGN;
-			current->parent = parent;
-
-			Cr_ArrayPut(parent->children, current);
-
 			skip_sep = 1;
-
-			if(bad) break;
 		} else if(ts[l]->type == CR_L_PERIOD) {
-			current = current->parent;
+			goup = 1;
+
+			goto force_scan;
 		} else if(ts[l]->type == CR_L_SEMICOLON) {
 			Cr_AST* parent;
 			Cr_AST* new_ast;
@@ -116,7 +108,11 @@ Cr_AST* Cr_Parse(const char* script) {
 
 			skip_sep = 1;
 		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_GROUP || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE) && ts[l]->type != CR_L_SEPARATOR && ts[0]->type != CR_L_BAR) {
-			Cr_AST* parent = current;
+			Cr_AST* parent;
+
+		force_scan:;
+
+			parent = current;
 
 			if(current->type == CR_P_BLOCK && Cr_ArrayLength(current->children) == 0) {
 				if(ts[l]->token[0] == ':') goto skip_arg;
@@ -132,7 +128,7 @@ Cr_AST* Cr_Parse(const char* script) {
 
 			if(parent != current) {
 				for(i = 0; i < Cr_ArrayLength(parent->children); i++) {
-					if(parent->children[i]->type != CR_P_MESSAGE) {
+					if(parent->children[i]->type != CR_P_MESSAGE && parent->children[i]->type != CR_P_ASSIGN) {
 						parent->children[i]->parent = current;
 						Cr_ArrayPut(current->children, parent->children[i]);
 
@@ -143,7 +139,7 @@ Cr_AST* Cr_Parse(const char* script) {
 				}
 			}
 
-			for(i = 0; i <= l; i++) {
+			for(i = 0; i <= l - (goup ? 1 : 0); i++) {
 				Cr_AST* new_ast;
 
 				if(ts[i]->type == CR_L_SEPARATOR) continue;
@@ -156,6 +152,8 @@ Cr_AST* Cr_Parse(const char* script) {
 
 				Cr_ArrayPut(current->children, new_ast);
 			}
+
+			for(i = 0; i < goup; i++) current = current->parent;
 		skip_arg:;
 		} else {
 			consumed = 0;

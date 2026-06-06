@@ -30,7 +30,7 @@ static int* debugAST(int n, int* last, Cr_AST* ast) {
 	bar2[0] = 0;
 	info[0] = 0;
 
-	if(ast->type == CR_P_ITEM) {
+	if(ast->type == CR_P_ITEM || ast->type == CR_P_MESSAGE || ast->type == CR_P_ASSIGN) {
 		Cr_Concat(info, " [");
 		Cr_EscapeConcat(info, ast->token);
 		Cr_Concat(info, "]");
