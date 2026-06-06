@@ -76,8 +76,8 @@ Cr_AST* Cr_Parse(Cr_AST* parent, const char* script) {
 			Cr_Debug("parser: local var\n");
 
 			skip_sep = 1;
-		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE) && ts[0]->type != CR_L_BAR) {
-			if(current->type == CR_P_PROGRAM) {
+		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE) && ts[0]->type != CR_L_BAR) {
+			if(current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK) {
 				Cr_AST* parent;
 
 				parent		= current;
