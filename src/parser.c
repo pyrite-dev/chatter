@@ -81,33 +81,67 @@ Cr_AST* Cr_Parse(const char* script) {
 			new_ast->parent = current;
 
 			Cr_ArrayPut(current->children, new_ast);
-		} else if(ts[l]->type == CR_L_BLOCK_BEGIN) {
+		} else if(ts[l]->type == CR_L_BLOCK_BEGIN || ts[l]->type == CR_L_PAR_BEGIN || ts[l]->type == CR_L_ARRAY_BEGIN || ts[l]->type == CR_L_BYTE_ARRAY_BEGIN) {
 			Cr_AST* parent;
 
-			parent		= current;
-			current		= CR_NEW_AST;
-			current->type	= CR_P_BLOCK;
-			current->parent = parent;
-
-			Cr_ArrayPut(parent->children, current);
-		} else if(ts[l]->type == CR_L_PAR_BEGIN) {
-			Cr_AST* parent;
-
-			parent		= current;
-			current		= CR_NEW_AST;
-			current->type	= CR_P_GROUP;
+			parent	= current;
+			current = CR_NEW_AST;
+			switch(ts[l]->type) {
+			case CR_L_BLOCK_BEGIN:
+				current->type = CR_P_BLOCK;
+				break;
+			case CR_L_PAR_BEGIN:
+				current->type = CR_P_GROUP;
+				break;
+			case CR_L_ARRAY_BEGIN:
+				current->type = CR_P_ARRAY;
+				break;
+			case CR_L_BYTE_ARRAY_BEGIN:
+				current->type = CR_P_BYTE_ARRAY;
+				break;
+			}
 			current->parent = parent;
 
 			Cr_ArrayPut(parent->children, current);
 		} else if(ts[l]->type == CR_L_BLOCK_END || ts[l]->type == CR_L_PAR_END) {
-			while(current->parent != CR_NULL && current->type != (ts[l]->type == CR_L_BLOCK_END ? CR_P_BLOCK : CR_P_GROUP)) current = current->parent;
+			int b = 0;
+
+			while(current->parent != CR_NULL) {
+				int m = 0;
+
+				switch(ts[l]->type) {
+				case CR_L_BLOCK_END:
+					if(current->type == CR_P_BLOCK) m = 1;
+					if(current->type == CR_P_BYTE_ARRAY) m = 1;
+					if(current->type == CR_P_GROUP) b = 1;
+					if(current->type == CR_P_ARRAY) b = 1;
+					break;
+				case CR_L_PAR_END:
+					if(current->type == CR_P_GROUP) m = 1;
+					if(current->type == CR_P_ARRAY) m = 1;
+					if(current->type == CR_P_BLOCK) b = 1;
+					if(current->type == CR_P_BYTE_ARRAY) b = 1;
+					break;
+				}
+
+				if(m || b) break;
+
+				current = current->parent;
+			}
+
+			if(b) {
+				Cr_Debug("parser: mismatching parentheses\n");
+
+				bad = 1;
+				break;
+			}
 
 			current = current->parent;
 		} else if(l > 1 && ts[0]->type == CR_L_BAR && ts[l]->type == CR_L_BAR) {
 			Cr_Debug("parser: local var\n");
 
 			skip_sep = 1;
-		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_GROUP || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE) && ts[l]->type != CR_L_SEPARATOR && ts[0]->type != CR_L_BAR) {
+		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_GROUP || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE || current->type == CR_P_ARRAY || current->type == CR_P_BYTE_ARRAY) && ts[l]->type != CR_L_SEPARATOR && ts[0]->type != CR_L_BAR) {
 			Cr_AST* parent;
 
 		force_scan:;

@@ -24,7 +24,10 @@ static int* debugAST(int n, int* last, Cr_AST* ast) {
 	    "group",
 	    "assign",
 	    "message",
-	    "item"};
+	    "item",
+	    "array",
+	    "byte-array",
+	    "block-argument"};
 
 	bar[0]	= 0;
 	bar2[0] = 0;
