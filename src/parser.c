@@ -149,7 +149,7 @@ Cr_AST* Cr_Parse(const char* script) {
 	Cr_ArrayFree(ts);
 
 	for(i = 0; i < Cr_ArrayLength(fl); i++) {
-		free(fl[i]);
+		Cr_Free(fl[i]);
 	}
 	Cr_ArrayFree(fl);
 
@@ -169,5 +169,5 @@ void Cr_DeleteAST(Cr_AST* root) {
 	}
 	Cr_ArrayFree(root->children);
 
-	free(root);
+	Cr_Free(root);
 }

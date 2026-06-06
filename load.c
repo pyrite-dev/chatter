@@ -25,4 +25,6 @@ int main(int argc, char** argv) {
 	interp = Cr_CreateInterp();
 	Cr_Eval(interp, src);
 	Cr_DeleteInterp(interp);
+
+	free(src);
 }

@@ -71,6 +71,8 @@ void	   Cr_DeleteInterp(Cr_Interp* interp);
 void	   Cr_Eval(Cr_Interp* interp, const char* script);
 
 /* lexer.c */
+#define CR_LEX_ERROR ((void*)1)
+
 Cr_Token* Cr_Lex(const char* str);
 
 /* parser.c */
