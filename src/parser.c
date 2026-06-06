@@ -18,6 +18,11 @@ Cr_AST* Cr_Parse(const char* script) {
 		int consumed = 1;
 		int j;
 
+		if(t == CR_LEX_ERROR) {
+			bad = 1;
+			break;
+		}
+
 		Cr_ArrayPut(fl, t);
 
 		if(t->type == CR_L_COMMENT) {
