@@ -80,7 +80,7 @@ int   Cr_Equal(const void* a, const void* b, int size);
 
 /* string.c */
 void Cr_Escape(char* dst, const char* src);
-int   Cr_Length(const char* ptr);
+int  Cr_Length(const char* ptr);
 
 /* debug.c */
 #ifdef DEBUG

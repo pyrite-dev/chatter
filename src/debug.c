@@ -13,30 +13,29 @@ void Cr_Debug(const char* fmt, ...) {
 }
 
 static int* debugAST(int n, int* last, Cr_AST* ast) {
-	char bar[1024];
-	char bar2[1024];
-	int  i;
+	char	    bar[1024];
+	char	    bar2[1024];
+	int	    i;
 	const char* g[] = {
-		"",
-		"program",
-		"block",
-		"assign",
-		"message",
-		"item"
-	};
+	    "",
+	    "program",
+	    "block",
+	    "assign",
+	    "message",
+	    "item"};
 
 	bar[0]	= 0;
 	bar2[0] = 0;
 
 	for(int i = 0; i < n; i++) {
 		if(i == (n - 1)) {
-			strcat(bar, "+-");
+			strcat(bar, " +-");
 		} else if(last[i + 1]) {
-			strcat(bar, "  ");
-			strcat(bar2, "  ");
+			strcat(bar, "   ");
+			strcat(bar2, "   ");
 		} else {
-			strcat(bar, "| ");
-			strcat(bar2, "| ");
+			strcat(bar, " | ");
+			strcat(bar2, " | ");
 		}
 	}
 
