@@ -40,6 +40,7 @@ void Cr_SortMsgRecv(Cr_AST* ast) {
 
 	if(ast->type == CR_P_MESSAGE) {
 		Cr_AST* receiver;
+		int	m = 0;
 
 		if(Cr_ArrayLength(ast->children) < 1) return;
 
@@ -74,39 +75,41 @@ void Cr_SortMsgRecv(Cr_AST* ast) {
 			}
 		}
 
-		/* binary */
-		receiver = ast->children[0];
-		for(i = 1; i < Cr_ArrayLength(ast->children); i += 2) {
-			if(Cr_ArrayLength(ast->children) <= 3) break;
+		/* binary/keyword */
+		for(m = 0; m < 2; m++) {
+			receiver = ast->children[0];
+			for(i = 1; i < Cr_ArrayLength(ast->children); i += 2) {
+				if(Cr_ArrayLength(ast->children) <= 3) break;
 
-			if(Cr_IsBinary(ast->children[i]->token)) {
-				Cr_AST* old = receiver;
-				Cr_AST* c   = ast->children[i];
-				Cr_AST* c2  = ast->children[i + 1];
-				int	j;
+				if((m == 0 ? Cr_IsBinary : Cr_IsKeyword)(ast->children[i]->token)) {
+					Cr_AST* old = receiver;
+					Cr_AST* c   = ast->children[i];
+					Cr_AST* c2  = ast->children[i + 1];
+					int	j;
 
-				receiver	 = CR_NEW_AST;
-				receiver->type	 = CR_P_MESSAGE;
-				receiver->parent = old->parent;
+					receiver	 = CR_NEW_AST;
+					receiver->type	 = CR_P_MESSAGE;
+					receiver->parent = old->parent;
 
-				Cr_ArrayPut(receiver->children, old);
-				Cr_ArrayPut(receiver->children, c);
-				Cr_ArrayPut(receiver->children, c2);
+					Cr_ArrayPut(receiver->children, old);
+					Cr_ArrayPut(receiver->children, c);
+					Cr_ArrayPut(receiver->children, c2);
 
-				Cr_ArrayDeleteMatch(receiver->parent->children, c);
-				Cr_ArrayDeleteMatch(receiver->parent->children, c2);
-				for(j = 0; j < Cr_ArrayLength(receiver->parent->children); j++) {
-					if(receiver->parent->children[j] == old) {
-						receiver->parent->children[j] = receiver;
-						break;
+					Cr_ArrayDeleteMatch(receiver->parent->children, c);
+					Cr_ArrayDeleteMatch(receiver->parent->children, c2);
+					for(j = 0; j < Cr_ArrayLength(receiver->parent->children); j++) {
+						if(receiver->parent->children[j] == old) {
+							receiver->parent->children[j] = receiver;
+							break;
+						}
 					}
+
+					old->parent = receiver;
+					c->parent   = receiver;
+					c2->parent  = receiver;
+
+					i -= 2;
 				}
-
-				old->parent = receiver;
-				c->parent   = receiver;
-				c2->parent  = receiver;
-
-				i -= 2;
 			}
 		}
 	}
