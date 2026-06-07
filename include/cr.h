@@ -120,10 +120,10 @@ Cr_AST* Cr_Parse(const char* str);
 void	Cr_DeleteAST(Cr_AST* root);
 
 /* mem.c */
-void* Cr_Alloc(int size);
+void* Cr_Alloc(long size);
 void  Cr_Free(void* ptr);
-void  Cr_Copy(void* dst, const void* src, int size);
-int   Cr_Equal(const void* a, const void* b, int size);
+void  Cr_Copy(void* dst, const void* src, long size);
+int   Cr_Equal(const void* a, const void* b, long size);
 
 /* string.c */
 void Cr_Escape(char* dst, const char* src);

@@ -10,6 +10,7 @@ Cr_VM* Cr_CreateVM(long mem) {
 }
 
 void Cr_DeleteVM(Cr_VM* vm) {
+	Cr_Free(vm->mem);
 	Cr_Free(vm);
 }
 

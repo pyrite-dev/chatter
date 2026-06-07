@@ -6,11 +6,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define CR_MALLOC malloc
+#define CR_CALLOC calloc
 #define CR_FREE free
+
+/* if your platform is missing calloc, define this */
+/* #define CR_MALLOC malloc */
 
 #define CR_MEMSET memset
 #define CR_MEMCPY memcpy
+
+/* this is optional */
+#define CR_MEMCMP memcmp
 
 #define CR_NULL NULL
 
