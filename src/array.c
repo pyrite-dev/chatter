@@ -1,11 +1,11 @@
 #include <cr.h>
 
 struct arrayinfo {
-	int esize;  /* element size */
-	int length; /* length */
+	long esize;  /* element size */
+	long length; /* length */
 };
 
-void* Cr_ArrayGrow(void* array, int size) {
+void* Cr_ArrayGrow(void* array, long size) {
 	struct arrayinfo* ai;
 	if(array == CR_NULL) {
 		ai	   = Cr_Alloc(sizeof(*ai) + size);
@@ -26,7 +26,7 @@ void* Cr_ArrayGrow(void* array, int size) {
 	return ai + 1;
 }
 
-int Cr_ArrayLength(void* array) {
+long Cr_ArrayLength(void* array) {
 	struct arrayinfo* ai = array;
 
 	if(array == CR_NULL) return 0;
@@ -35,7 +35,7 @@ int Cr_ArrayLength(void* array) {
 	return ai->length;
 }
 
-void Cr_ArrayDestroy(void* array) {
+void Cr_ArrayFreeInternal(void* array) {
 	struct arrayinfo* ai = array;
 
 	if(array == CR_NULL) return;
@@ -44,11 +44,11 @@ void Cr_ArrayDestroy(void* array) {
 	Cr_Free(ai);
 }
 
-void* Cr_ArrayShrink(void* array, int index) {
+void* Cr_ArrayDeleteInternal(void* array, long index) {
 	struct arrayinfo* old = array;
 	struct arrayinfo* ai;
-	int		  i;
-	int		  n = 0;
+	long		  i;
+	long		  n = 0;
 
 	if(array == CR_NULL) return CR_NULL;
 	old--;
@@ -70,11 +70,11 @@ void* Cr_ArrayShrink(void* array, int index) {
 	return ai + 1;
 }
 
-void* Cr_ArrayShrinkMatch(void* array, void* element) {
+void* Cr_ArrayDeleteMatchInternal(void* array, void* element) {
 	struct arrayinfo* ai = array;
-	int		  esize;
+	long		  esize;
 	unsigned char*	  b = array;
-	int		  i;
+	long		  i;
 
 	if(array == CR_NULL) return CR_NULL;
 	ai--;

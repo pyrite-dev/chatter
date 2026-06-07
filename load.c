@@ -1,11 +1,28 @@
 #include <cr.h>
 #include <stdio.h>
 
+CR_NEW_HASHMAP(map,
+	       char* key;
+	       int   value;);
+
 int main(int argc, char** argv) {
 	Cr_VM* vm;
 	FILE*  f;
 	char*  src;
 	int    sz;
+
+	struct map* h = NULL;
+	char*	    k;
+	int	    v;
+
+	k = "Hello";
+	v = 123;
+
+	Cr_HashMapPut(h, k, v);
+
+	printf("%d\n", Cr_HashMapGet(h, k)->value);
+
+	return 0;
 
 	if(argc != 2 || (f = fopen(argv[1], "rb")) == NULL) {
 		fprintf(stderr, "Usage: %s input\n", argv[0]);

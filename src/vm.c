@@ -22,6 +22,8 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 
 	if(Cr_SortAndCleanMsgRecv(ast) == CR_OK) {
 		Cr_DebugAST(ast);
+
+		Cr_Compile(vm, ast);
 	} else {
 		st = CR_ERROR;
 	}

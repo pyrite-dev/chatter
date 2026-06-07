@@ -105,10 +105,15 @@ enum CR_STATUS {
 #define CR_IS_SEPARATOR(x) ((x) == ' ' || (x) == '\t' || (x) == '\r' || (x) == '\n')
 #define CR_CAN_BE_FIRST(x) (CR_IS_ALPHA((x)) || (x) == '_')
 
+#define CR_OFFSETOF(var, field) ((char*)&(var)->field - (char*)(var))
+
 /* vm.c */
 Cr_VM* Cr_CreateVM(long mem);
 void   Cr_DeleteVM(Cr_VM* vm);
 int    Cr_Eval(Cr_VM* vm, const char* script);
+
+/* compiler.c */
+void Cr_Compile(Cr_VM* vm, Cr_AST* ast);
 
 /* lexer.c */
 #define CR_LEX_ERROR ((void*)1)
@@ -147,6 +152,9 @@ void Cr_DebugAST(Cr_AST* root);
 #define Cr_DebugAST(root)
 #endif
 
+/* hash.c */
+unsigned long Cr_Hash(const void* input, long length);
+
 /* array.c */
 #define Cr_ArrayPut(x, y) \
 	{ \
@@ -155,22 +163,51 @@ void Cr_DebugAST(Cr_AST* root);
 	}
 #define Cr_ArrayFree(x) \
 	{ \
-		Cr_ArrayDestroy((x)); \
+		Cr_ArrayFreeInternal((x)); \
 		(x) = CR_NULL; \
 	}
 #define Cr_ArrayDelete(x, i) \
 	{ \
-		(x) = Cr_ArrayShrink((x), (i)); \
+		(x) = Cr_ArrayDeleteInternal((x), (i)); \
 	}
 #define Cr_ArrayDeleteMatch(x, e) \
 	{ \
-		(x) = Cr_ArrayShrinkMatch((x), &(e)); \
+		(x) = Cr_ArrayDeleteMatchInternal((x), &(e)); \
 	}
 
-void* Cr_ArrayGrow(void* array, int size);
-int   Cr_ArrayLength(void* array);
-void  Cr_ArrayDestroy(void* array);		       /* do not use this, use Cr_ArrayFree instead */
-void* Cr_ArrayShrink(void* array, int index);	       /* do not use this, use Cr_ArrayDelete instead */
-void* Cr_ArrayShrinkMatch(void* array, void* element); /* do not use this, use Cr_ArrayDeleteMatch instead */
+void* Cr_ArrayGrow(void* array, long size); /* do not use this */
+long  Cr_ArrayLength(void* array);
+void  Cr_ArrayFreeInternal(void* array);		       /* do not use this, use Cr_ArrayFree instead */
+void* Cr_ArrayDeleteInternal(void* array, long index);	       /* do not use this, use Cr_ArrayDelete instead */
+void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use this, use Cr_ArrayDeleteMatch instead */
+
+/* hashmap.c */
+#define CR_NEW_HASHMAP(x, y) \
+	struct x { \
+		y unsigned char used; \
+		void*		chain; \
+		union x##_union { \
+			void*	  ptr; \
+			struct x* casted; \
+		} temp; \
+	}
+
+#define Cr_HashMapGet(x, y) ( \
+    (x)->temp.ptr = Cr_HashMapGetInternal((x), sizeof(*(x)), &(y), CR_OFFSETOF((x), key), sizeof((x)->key), CR_OFFSETOF((x), used), CR_OFFSETOF((x), chain)), \
+    (x)->temp.casted)
+#define Cr_HashMapPut(x, y, z) \
+	{ \
+		(x) = Cr_HashMapPutInternal((x), sizeof(*(x)), &(y), CR_OFFSETOF((x), key), sizeof((x)->key), &(z), CR_OFFSETOF((x), value), sizeof((x)->value), CR_OFFSETOF((x), used), sizeof((x)->used), CR_OFFSETOF((x), chain)); \
+	}
+#define Cr_HashMapFree(x) \
+	{ \
+		Cr_HashMapDestroy((x)); \
+		(x) = CR_NULL; \
+	}
+
+void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long kstart, long ksize, long ustart, long cstart);							   /* do not use this, use Cr_HashMapGet */
+void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long kstart, long ksize, const void* value, long vstart, long vsize, long ustart, long usize, long cstart); /* do not use this, use Cr_HashMapPut */
+long  Cr_HashMapLength(void* hashmap);
+void  Cr_HashMapDestroy(void* hashmap); /* do not use this, use Cr_HashMapFree instead */
 
 #endif
