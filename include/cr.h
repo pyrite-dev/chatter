@@ -3,11 +3,33 @@
 
 #include <crConfig.h>
 
-typedef struct Cr_Interp Cr_Interp;
-typedef struct Cr_Token	 Cr_Token;
-typedef struct Cr_AST	 Cr_AST;
+typedef struct Cr_VM		  Cr_VM;
+typedef struct Cr_InstructionCell Cr_InstructionCell;
+typedef union Cr_Cell		  Cr_Cell;
+typedef struct Cr_Object	  Cr_Object;
+typedef struct Cr_Token		  Cr_Token;
+typedef struct Cr_AST		  Cr_AST;
 
-struct Cr_Interp {
+struct Cr_VM {
+	Cr_Cell* mem;
+	long	 memsize;
+
+	struct Cr_Object** stack;
+};
+
+struct Cr_InstructionCell {
+	unsigned char op;
+	unsigned char a1;
+	unsigned char a2;
+	unsigned char a3;
+};
+
+union Cr_Cell {
+	Cr_InstructionCell i;
+	unsigned int	   u32;
+};
+
+struct Cr_Object {
 };
 
 enum CR_LEXER_TOKEN {
@@ -35,6 +57,11 @@ enum CR_LEXER_TOKEN {
 	CR_L_PAR_END
 };
 
+struct Cr_Token {
+	int  type;
+	char token[CR_TOKSZ + 1];
+};
+
 enum CR_PARSER_TOKEN {
 	CR_P_PROGRAM = 1,
 	CR_P_BLOCK,
@@ -47,17 +74,28 @@ enum CR_PARSER_TOKEN {
 	CR_P_BLOCK_ARG
 };
 
-struct Cr_Token {
-	int  type;
-	char token[CR_TOKSZ + 1];
-};
-
 struct Cr_AST {
 	int	 type;
 	char	 token[CR_TOKSZ + 1];
 	Cr_AST*	 parent;
 	Cr_AST** children;
 };
+
+#define CR_NEW_AST Cr_Alloc(sizeof(Cr_AST))
+
+enum CR_STATUS {
+	CR_OK = 0,
+	CR_ERROR
+};
+
+/* they are in kilowords (which is unsigned int) */
+#define CR_MEM_1M (1 * 1024)   /* 4MiB */
+#define CR_MEM_2M (2 * 1024)   /* 8MiB */
+#define CR_MEM_4M (4 * 1024)   /* 16MiB */
+#define CR_MEM_8M (8 * 1024)   /* 32MiB */
+#define CR_MEM_16M (16 * 1024) /* 64MiB */
+
+#define CR_MEM_STD CR_MEM_4M
 
 #define CR_IS_ALPHA(x) (('a' <= (x) && (x) <= 'z') || ('A' <= (x) && (x) <= 'Z'))
 #define CR_IS_NUMBER(x) ('0' <= (x) && (x) <= '9')
@@ -67,12 +105,10 @@ struct Cr_AST {
 #define CR_IS_SEPARATOR(x) ((x) == ' ' || (x) == '\t' || (x) == '\r' || (x) == '\n')
 #define CR_CAN_BE_FIRST(x) (CR_IS_ALPHA((x)) || (x) == '_')
 
-#define CR_NEW_AST Cr_Alloc(sizeof(Cr_AST))
-
-/* core.c */
-Cr_Interp* Cr_CreateInterp(void);
-void	   Cr_DeleteInterp(Cr_Interp* interp);
-void	   Cr_Eval(Cr_Interp* interp, const char* script);
+/* vm.c */
+Cr_VM* Cr_CreateVM(long mem);
+void   Cr_DeleteVM(Cr_VM* vm);
+int    Cr_Eval(Cr_VM* vm, const char* script);
 
 /* lexer.c */
 #define CR_LEX_ERROR ((void*)1)
@@ -96,11 +132,11 @@ int  Cr_Length(const char* ptr);
 void Cr_Concat(char* dst, const char* src);
 
 /* op.c */
-int  Cr_IsUnary(const char* op);
-int  Cr_IsBinary(const char* op);
-int  Cr_IsKeyword(const char* op);
-int  Cr_IsReceiver(const char* op);
-void Cr_SortAndCleanMsgRecv(Cr_AST* ast);
+int Cr_IsUnary(const char* op);
+int Cr_IsBinary(const char* op);
+int Cr_IsKeyword(const char* op);
+int Cr_IsReceiver(const char* op);
+int Cr_SortAndCleanMsgRecv(Cr_AST* ast);
 
 /* debug.c */
 #ifdef DEBUG

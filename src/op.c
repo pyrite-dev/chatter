@@ -39,7 +39,7 @@ int Cr_IsReceiver(const char* op) {
 	return !(Cr_IsBinary(op) || Cr_IsKeyword(op));
 }
 
-void Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
+int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 	int i;
 
 	for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
@@ -47,7 +47,9 @@ void Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 			Cr_ArrayDelete(ast->children, i);
 			i--;
 		} else {
-			Cr_SortAndCleanMsgRecv(ast->children[i]);
+			if(Cr_SortAndCleanMsgRecv(ast->children[i]) == CR_ERROR) {
+				return CR_ERROR;
+			}
 		}
 	}
 
@@ -58,7 +60,7 @@ void Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 		int	cond = 0;
 		int	f    = 1;
 
-		if(Cr_ArrayLength(ast->children) < 1) return;
+		if(Cr_ArrayLength(ast->children) < 1) return CR_OK;
 
 		/* unary */
 		for(i = 1; i < Cr_ArrayLength(ast->children); i++) {
@@ -147,4 +149,6 @@ void Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 			Cr_Free(old);
 		}
 	}
+
+	return CR_OK;
 }

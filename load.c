@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 int main(int argc, char** argv) {
-	Cr_Interp* interp;
-	FILE*	   f;
-	char*	   src;
-	int	   sz;
+	Cr_VM* vm;
+	FILE*  f;
+	char*  src;
+	int    sz;
 
 	if(argc != 2 || (f = fopen(argv[1], "rb")) == NULL) {
 		fprintf(stderr, "Usage: %s input\n", argv[0]);
@@ -22,9 +22,9 @@ int main(int argc, char** argv) {
 
 	src[sz] = 0;
 
-	interp = Cr_CreateInterp();
-	Cr_Eval(interp, src);
-	Cr_DeleteInterp(interp);
+	vm = Cr_CreateVM(CR_MEM_STD);
+	Cr_Eval(vm, src);
+	Cr_DeleteVM(vm);
 
 	free(src);
 }
