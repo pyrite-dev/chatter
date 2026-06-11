@@ -161,6 +161,11 @@ unsigned long Cr_Hash(const void* input, long length);
 		(x)			     = Cr_ArrayGrow((x), sizeof(*x)); \
 		(x)[Cr_ArrayLength((x)) - 1] = (y); \
 	}
+#define Cr_ArrayInsert(x, y, z) \
+	{ \
+		(x)	 = Cr_ArrayGrowFrom((x), (y), sizeof(*x)); \
+		(x)[(y)] = (z); \
+	}
 #define Cr_ArrayFree(x) \
 	{ \
 		Cr_ArrayFreeInternal((x)); \
@@ -175,7 +180,8 @@ unsigned long Cr_Hash(const void* input, long length);
 		(x) = Cr_ArrayDeleteMatchInternal((x), &(e)); \
 	}
 
-void* Cr_ArrayGrow(void* array, long size); /* do not use this */
+void* Cr_ArrayGrow(void* array, long size);		    /* do not use this */
+void* Cr_ArrayGrowFrom(void* array, long index, long size); /* do not use this */
 long  Cr_ArrayLength(void* array);
 void  Cr_ArrayFreeInternal(void* array);		       /* do not use this, use Cr_ArrayFree instead */
 void* Cr_ArrayDeleteInternal(void* array, long index);	       /* do not use this, use Cr_ArrayDelete instead */

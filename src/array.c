@@ -26,6 +26,28 @@ void* Cr_ArrayGrow(void* array, long size) {
 	return ai + 1;
 }
 
+void* Cr_ArrayGrowFrom(void* array, long index, long size) {
+	long  i	  = 0;
+	long  l	  = Cr_ArrayLength(array);
+	void* old = CR_NULL;
+
+	if(l > 0) {
+		old = Cr_Alloc(l * size);
+
+		Cr_Copy(old, array, l * size);
+	}
+
+	array = Cr_ArrayGrow(array, size);
+
+	for(i = index; i < l; i++) {
+		Cr_Copy(((unsigned char*)array) + l * (i + 1), ((unsigned char*)old) + l * i, l);
+	}
+
+	if(old != CR_NULL) Cr_Free(old);
+
+	return array;
+}
+
 long Cr_ArrayLength(void* array) {
 	struct arrayinfo* ai = array;
 
