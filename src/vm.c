@@ -1,7 +1,10 @@
 #include <cr.h>
 
 Cr_VM* Cr_CreateVM(long mem) {
-	Cr_VM* vm = Cr_Alloc(sizeof(*vm));
+	Cr_VM*	       vm = Cr_Alloc(sizeof(*vm));
+	unsigned short n  = 1;
+
+	if((*(unsigned char*)&n) == 0) vm->big = 1;
 
 	vm->mem	    = Cr_Alloc(sizeof(*vm->mem) * 1024 * mem);
 	vm->memsize = mem * 1024;

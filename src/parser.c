@@ -138,7 +138,31 @@ Cr_AST* Cr_Parse(const char* script) {
 
 			current = current->parent;
 		} else if(l > 1 && ts[0]->type == CR_L_BAR && ts[l]->type == CR_L_BAR) {
+			Cr_AST* new_ast;
+			Cr_AST* new_item;
+
+			Cr_Debug("%d\n", current->type);
+
+			new_ast		= CR_NEW_AST;
+			new_ast->type	= CR_P_LOCAL;
+			new_ast->parent = current;
+
+			Cr_ArrayPut(current->children, new_ast);
+
 			Cr_Debug("parser: local var\n");
+
+			for(i = 1; i < (l - 1); i++) {
+				if(ts[i]->type != CR_L_SEPARATOR) {
+					Cr_AST* new_item;
+
+					new_item       = CR_NEW_AST;
+					new_item->type = CR_P_ITEM;
+					Cr_Copy(new_item->token, ts[i]->token, Cr_Length(ts[i]->token));
+					new_item->parent = new_ast;
+
+					Cr_ArrayPut(new_ast->children, new_item);
+				}
+			}
 
 			skip_sep = 1;
 		} else if((current->type == CR_P_PROGRAM || current->type == CR_P_BLOCK || current->type == CR_P_GROUP || current->type == CR_P_ASSIGN || current->type == CR_P_MESSAGE || current->type == CR_P_ARRAY || current->type == CR_P_BYTE_ARRAY) && ts[l]->type != CR_L_SEPARATOR && ts[0]->type != CR_L_BAR) {
@@ -162,7 +186,7 @@ Cr_AST* Cr_Parse(const char* script) {
 
 			if(parent != current) {
 				for(i = 0; i < Cr_ArrayLength(parent->children); i++) {
-					if(parent->children[i]->type != CR_P_MESSAGE && parent->children[i]->type != CR_P_ASSIGN) {
+					if(parent->children[i]->type != CR_P_MESSAGE && parent->children[i]->type != CR_P_ASSIGN && parent->children[i]->type != CR_P_LOCAL) {
 						parent->children[i]->parent = current;
 						Cr_ArrayPut(current->children, parent->children[i]);
 

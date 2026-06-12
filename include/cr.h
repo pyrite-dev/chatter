@@ -10,9 +10,18 @@ typedef struct Cr_Object	  Cr_Object;
 typedef struct Cr_Token		  Cr_Token;
 typedef struct Cr_AST		  Cr_AST;
 
+enum CR_VM_OP {
+	CR_VM_NOP = 0,
+	CR_VM_RET,
+	CR_VM_CALL
+};
+
 struct Cr_VM {
+	int big;
+
 	Cr_Cell* mem;
 	long	 memsize;
+	long	 section_seq;
 
 	struct Cr_Object** stack;
 };
@@ -26,7 +35,10 @@ struct Cr_InstructionCell {
 
 union Cr_Cell {
 	Cr_InstructionCell i;
+	unsigned char	   d[4];
 	unsigned int	   u32;
+	int		   s32;
+	float		   f32;
 };
 
 struct Cr_Object {
@@ -67,6 +79,7 @@ enum CR_PARSER_TOKEN {
 	CR_P_BLOCK,
 	CR_P_GROUP,
 	CR_P_ASSIGN,
+	CR_P_LOCAL,
 	CR_P_MESSAGE,
 	CR_P_ITEM,
 	CR_P_ARRAY,
@@ -130,6 +143,10 @@ void  Cr_Free(void* ptr);
 void  Cr_Copy(void* dst, const void* src, long size);
 int   Cr_Equal(const void* a, const void* b, long size);
 
+/* byteorder.c */
+unsigned int Cr_BigU32(Cr_VM* vm, unsigned int n);
+int	     Cr_BigS32(Cr_VM* vm, int n);
+
 /* string.c */
 void Cr_Escape(char* dst, const char* src);
 void Cr_EscapeConcat(char* dst, const char* src);
@@ -147,9 +164,11 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast);
 #ifdef DEBUG
 void Cr_Debug(const char* fmt, ...);
 void Cr_DebugAST(Cr_AST* root);
+void Cr_DebugCells(Cr_VM* vm, Cr_Cell* cells, long length);
 #else
 #define Cr_Debug(x, ...)
 #define Cr_DebugAST(root)
+#define Cr_DebugCells(vm, cells, length)
 #endif
 
 /* hash.c */
