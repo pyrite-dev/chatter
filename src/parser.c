@@ -251,12 +251,12 @@ Cr_AST* Cr_Parse(const char* script) {
 }
 
 void Cr_DeleteAST(Cr_AST* root) {
-	int i;
-
-	for(i = 0; i < Cr_ArrayLength(root->children); i++) {
-		Cr_DeleteAST(root->children[i]);
+	while(Cr_ArrayLength(root->children) > 0) {
+		Cr_DeleteAST(root->children[0]);
 	}
 	Cr_ArrayFree(root->children);
+
+	if(root->parent != CR_NULL) Cr_ArrayDeleteMatch(root->parent->children, root);
 
 	Cr_Free(root);
 }

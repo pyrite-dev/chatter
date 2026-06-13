@@ -159,6 +159,6 @@ void Cr_HashMapDestroy(void* hashmap) {
 	if(hashmap == CR_NULL) return;
 	hi--;
 
-	Cr_Free(hi->indices);
+	Cr_ArrayFree(hi->indices);
 	Cr_Free(hi);
 }

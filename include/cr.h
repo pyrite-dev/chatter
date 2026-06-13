@@ -47,8 +47,10 @@ struct Cr_Section {
 	unsigned char used;
 	void*	      chain;
 	union Cr_Section_union {
-		void*	    ptr;
-		Cr_Section* casted;
+		void*	     ptr;
+		void*	     pptr;
+		Cr_Section*  casted;
+		Cr_Section** pcasted;
 	} temp;
 };
 
@@ -72,7 +74,7 @@ struct Cr_ThreadRunning {
 struct Cr_Thread {
 	Cr_VM* vm;
 
-	Cr_ThreadRunning** running;
+	Cr_ThreadRunning* running;
 
 	struct Cr_Object** stack;
 };
@@ -162,6 +164,10 @@ Cr_VM* Cr_CreateVM(long mem);
 void   Cr_DeleteVM(Cr_VM* vm);
 int    Cr_Eval(Cr_VM* vm, const char* script);
 
+/* thread.c */
+Cr_Thread* Cr_CreateThread(Cr_VM* vm, long section);
+void	   Cr_DeleteThread(Cr_Thread* thread);
+
 /* compiler.c */
 void Cr_Compile(Cr_VM* vm, Cr_AST* ast);
 
@@ -250,8 +256,10 @@ void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use thi
 		y unsigned char used; \
 		void*		chain; \
 		union x##_union { \
-			void*	  ptr; \
-			struct x* casted; \
+			void*	   ptr; \
+			void*	   pptr; \
+			struct x*  casted; \
+			struct x** pcasted; \
 		} temp; \
 	}
 

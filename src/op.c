@@ -78,12 +78,15 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 				Cr_Copy(receiver->token, c->token, Cr_Length(c->token));
 				receiver->parent = ast;
 
+				Cr_ArrayDeleteMatch(old->parent->children, old);
+				old->parent = receiver;
 				Cr_ArrayPut(receiver->children, old);
 
 				ast->children[i - 1] = receiver;
 
 				Cr_ArrayDeleteMatch(receiver->parent->children, c);
 
+				c->parent = CR_NULL;
 				Cr_DeleteAST(c);
 
 				i--;
@@ -119,8 +122,14 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 					}
 					receiver->parent = ast;
 
-					if(n) Cr_ArrayPut(receiver->children, old);
+					if(n) {
+						Cr_ArrayDeleteMatch(old->parent->children, old);
+						old->parent = receiver;
+						Cr_ArrayPut(receiver->children, old);
+					}
 
+					Cr_ArrayDeleteMatch(a->parent->children, a);
+					a->parent = receiver;
 					Cr_ArrayPut(receiver->children, a);
 
 					if(n) ast->children[i - 1] = receiver;
@@ -128,6 +137,7 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 					Cr_ArrayDeleteMatch(receiver->parent->children, c);
 					Cr_ArrayDeleteMatch(receiver->parent->children, a);
 
+					c->parent = CR_NULL;
 					Cr_DeleteAST(c);
 
 					i -= 2;
@@ -144,9 +154,16 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 		cond = cond && ast->type == CR_P_MESSAGE && Cr_ArrayLength(ast->children) == 1;
 
 		if(cond) {
+			Cr_AST* oldparent = ast->parent;
+
 			old = ast->children[0];
+			Cr_ArrayFree(ast->children);
+
 			Cr_Copy(ast, old, sizeof(*ast));
 			Cr_Free(old);
+
+			ast->parent = oldparent;
+			for(i = 0; i < Cr_ArrayLength(ast->children); i++) ast->children[i]->parent = ast;
 		}
 	}
 
