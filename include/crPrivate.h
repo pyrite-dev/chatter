@@ -19,6 +19,8 @@ enum CR_VM_OP {
 	CR_VM_CALL,
 	CR_VM_INT,
 	CR_VM_FLOAT,
+	CR_VM_ARR,
+	CR_VM_BYTEARR,
 	CR_VM_VAR,
 	CR_VM_BLOCK,
 	CR_VM_LOCAL,
@@ -57,9 +59,6 @@ struct Cr_Section {
 struct Cr_VM {
 	int big;
 
-	Cr_Cell* mem;
-	long	 memsize;
-
 	Cr_Section* sections;
 	int	    section_seq;
 
@@ -67,8 +66,8 @@ struct Cr_VM {
 };
 
 struct Cr_ThreadRunning {
-	long sp; /* section ptr */
-	long ip; /* instruction ptr */
+	unsigned long sp; /* section ptr */
+	unsigned long ip; /* instruction ptr */
 };
 
 struct Cr_Thread {
@@ -148,6 +147,7 @@ struct Cr_AST {
 
 /* vm.c */
 void Cr_Step(Cr_VM* vm);
+void Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32);
 
 /* thread.c */
 Cr_Thread* Cr_CreateThread(Cr_VM* vm, long section);
@@ -194,11 +194,9 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast);
 #ifdef DEBUG
 void Cr_Debug(const char* fmt, ...);
 void Cr_DebugAST(Cr_AST* root);
-void Cr_DebugCells(Cr_VM* vm, Cr_Cell* cells, long length);
 #else
 #define Cr_Debug(x, ...)
 #define Cr_DebugAST(root)
-#define Cr_DebugCells(vm, cells, length)
 #endif
 
 /* hash.c */

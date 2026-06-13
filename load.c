@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
 	src[sz] = 0;
 
-	vm = Cr_CreateVM(CR_MEM_STD);
+	vm = Cr_CreateVM();
 	Cr_Eval(vm, src);
 	Cr_DeleteVM(vm);
 

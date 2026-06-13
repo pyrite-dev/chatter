@@ -27,10 +27,13 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, Cr_Section* section) {
 			{
 				Cr_Cell	      c;
 				unsigned long n = Cr_Hash(ast->token, Cr_Length(ast->token));
+				int	      l = Cr_ArrayLength(ast->children);
 
 				c.u32  = 0;
 				c.i.op = op;
-				c.i.a1 = Cr_ArrayLength(ast->children);
+				c.i.a1 = (l >> 16) & 0xff;
+				c.i.a2 = (l >> 8) & 0xff;
+				c.i.a3 = (l >> 0) & 0xff;
 				Cr_ArrayPut(section->value, c);
 
 				c.u32 = Cr_BigU32(vm, (n >> 32) & 0xffffffff);
@@ -84,12 +87,32 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, Cr_Section* section) {
 		break;
 	}
 	case CR_P_BLOCK:
+	case CR_P_ARRAY:
+	case CR_P_BYTE_ARRAY:
 	{
 		Cr_Cell c;
-		int	n = compile(vm, ast);
+		int	n;
+		int	i;
 
-		c.u32  = 0;
-		c.i.op = CR_VM_BLOCK;
+		c.u32 = 0;
+		switch(ast->type) {
+		case CR_P_BLOCK:
+			c.i.op = CR_VM_BLOCK;
+			n      = compile(vm, ast);
+			break;
+		case CR_P_ARRAY:
+			if(c.i.op == 0) c.i.op = CR_VM_ARR;
+		case CR_P_BYTE_ARRAY:
+			if(c.i.op == 0) c.i.op = CR_VM_BYTEARR;
+
+			n = Cr_ArrayLength(ast->children);
+
+			for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
+				Cr_AST* a = ast->children[i];
+
+				compile_section(vm, a, section);
+			}
+		}
 		c.i.a1 = (n >> 16) & 0xff;
 		c.i.a2 = (n >> 8) & 0xff;
 		c.i.a3 = (n >> 0) & 0xff;
@@ -154,7 +177,5 @@ void Cr_Compile(Cr_VM* vm, Cr_AST* ast) {
 		Cr_Section* s = Cr_HashMapGet(vm->sections, i);
 
 		Cr_Debug("compiler: %d: %d cells\n", s->key, Cr_ArrayLength(s->value));
-		Cr_DebugCells(vm, s->value, Cr_ArrayLength(s->value));
-		Cr_Debug("compiler:\n");
 	}
 }

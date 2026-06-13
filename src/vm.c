@@ -1,14 +1,11 @@
 #include <crPrivate.h>
 #include <cr.h>
 
-Cr_VM* Cr_CreateVM(long mem) {
+Cr_VM* Cr_CreateVM(void) {
 	Cr_VM*	       vm = Cr_Alloc(sizeof(*vm));
 	unsigned short n  = 1;
 
 	if((*(unsigned char*)&n) == 0) vm->big = 1;
-
-	vm->mem	    = Cr_Alloc(sizeof(*vm->mem) * 1024 * mem);
-	vm->memsize = mem * 1024;
 
 	return vm;
 }
@@ -26,7 +23,6 @@ void Cr_DeleteVM(Cr_VM* vm) {
 	}
 	Cr_FreeHashMap(vm->sections);
 
-	Cr_Free(vm->mem);
 	Cr_Free(vm);
 }
 
@@ -59,4 +55,20 @@ void Cr_Step(Cr_VM* vm) {
 	unsigned long i;
 
 	for(i = 0; i < Cr_ArrayLength(vm->threads); i++) Cr_ThreadStep(vm->threads[i]);
+}
+
+void Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32) {
+	*n8  = 0;
+	*n32 = 0;
+
+	if(cell->i.op == CR_VM_CALL) {
+		*n8  = 3;
+		*n32 = 2;
+	} else if(cell->i.op == CR_VM_INT || cell->i.op == CR_VM_FLOAT) {
+		*n32 = 1;
+	} else if(cell->i.op == CR_VM_VAR || cell->i.op == CR_VM_LOCAL || cell->i.op == CR_VM_SETVAR) {
+		*n32 = 2;
+	} else if(cell->i.op == CR_VM_BLOCK || cell->i.op == CR_VM_ARR || cell->i.op == CR_VM_BYTEARR) {
+		*n8 = 3;
+	}
 }
