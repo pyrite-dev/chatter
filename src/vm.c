@@ -4,29 +4,56 @@
 Cr_VM* Cr_CreateVM(void) {
 	Cr_VM*	       vm = Cr_Alloc(sizeof(*vm));
 	unsigned short n  = 1;
-	Cr_Object*     mc;
-	Cr_Object*     oc;
+	Cr_Object*     class_c;
+	Cr_Object*     obj_c;
+	Cr_Object*     mag_c;
+	Cr_Object*     char_c;
+	Cr_Object*     num_c;
+	Cr_Object*     int_c;
+	Cr_Object*     float_c;
+	Cr_Object*     bool_c;
+	Cr_Object*     true_c;
+	Cr_Object*     false_c;
+	Cr_Object*     block_c;
 
 	if((*(unsigned char*)&n) == 0) vm->big = 1;
 
-	mc = Cr_NewClassObj(vm, "Metaclass");
-	oc = Cr_NewClassObj(vm, "Object");
+	class_c = Cr_NewClassObj(vm, CR_NULL, "Class");
+
+	obj_c			= Cr_NewClassObj(vm, CR_NULL, "Object");
+	class_c->superclass_obj = obj_c;
+
+	mag_c = Cr_NewClassObj(vm, obj_c, "Magnitude");
+
+	char_c = Cr_NewClassObj(vm, mag_c, "Character");
+
+	num_c = Cr_NewClassObj(vm, mag_c, "Number");
+
+	int_c = Cr_NewClassObj(vm, num_c, "Integer");
+
+	float_c = Cr_NewClassObj(vm, num_c, "Float");
+
+	bool_c = Cr_NewClassObj(vm, obj_c, "Boolean");
+
+	true_c = Cr_NewClassObj(vm, bool_c, "True");
+
+	false_c = Cr_NewClassObj(vm, bool_c, "False");
+
+	block_c = Cr_NewClassObj(vm, obj_c, "Block");
 
 	return vm;
 }
 
 void Cr_DeleteVM(Cr_VM* vm) {
 	unsigned long i;
-	Cr_ObjectKV*  cs = Cr_HashMapGetAll(vm->classes);
 
 	while(Cr_ArrayLength(vm->threads) > 0) Cr_DeleteThread(vm->threads[0]);
 	Cr_FreeArray(vm->threads);
 
-	for(i = 0; i < Cr_HashMapLength(vm->classes); i++) {
-		Cr_DeleteObj(cs[i].value);
-	}
-	Cr_Free(cs);
 	Cr_FreeHashMap(vm->classes);
+
+	while(Cr_ArrayLength(vm->objects) > 0) Cr_DeleteObj(vm->objects[0]);
+	Cr_FreeArray(vm->objects);
 
 	for(i = 0; i < vm->section_seq; i++) {
 		Cr_Section* s = Cr_HashMapGet(vm->sections, i);
@@ -43,6 +70,7 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 	int	      st  = CR_OK;
 	unsigned long seq = vm->section_seq;
 	Cr_Thread*    th;
+	int	      s;
 
 	if(ast == CR_NULL) return CR_ERROR;
 
@@ -56,17 +84,28 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 
 	Cr_DeleteAST(ast);
 
-	th = Cr_CreateThread(vm, CR_NULL, seq);
-	while(!th->dead) Cr_Step(vm);
-	Cr_DeleteThread(th);
+	if(st != CR_ERROR) {
+		th = Cr_CreateThread(vm, CR_NULL, seq);
+		while(!th->dead && (s = Cr_Step(vm)) != CR_ERROR);
+		Cr_DeleteThread(th);
+
+		if(s == CR_ERROR) st = CR_ERROR;
+	}
 
 	return st;
 }
 
-void Cr_Step(Cr_VM* vm) {
+int Cr_Step(Cr_VM* vm) {
 	unsigned long i;
+	int	      s;
 
-	for(i = 0; i < Cr_ArrayLength(vm->threads); i++) Cr_ThreadStep(vm->threads[i]);
+	for(i = 0; i < Cr_ArrayLength(vm->threads); i++) {
+		if((s = Cr_ThreadStep(vm->threads[i])) == CR_ERROR) {
+			return CR_ERROR;
+		}
+	}
+
+	return CR_OK;
 }
 
 void Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32) {

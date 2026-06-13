@@ -9,7 +9,7 @@ typedef struct Cr_Section	  Cr_Section;
 typedef struct Cr_Object	  Cr_Object;
 typedef struct Cr_ObjectKV	  Cr_ObjectKV;
 typedef struct Cr_VM		  Cr_VM;
-typedef struct Cr_ThreadRunning	  Cr_ThreadRunning;
+typedef struct Cr_CellPosition	  Cr_CellPosition;
 typedef struct Cr_Thread	  Cr_Thread;
 typedef struct Cr_Token		  Cr_Token;
 typedef struct Cr_AST		  Cr_AST;
@@ -58,11 +58,17 @@ union Cr_Cell {
 CR_NEW_HASHMAP(Cr_Section, unsigned long key; Cr_Cell * value;);
 
 struct Cr_Object {
-	Cr_Object* meta;
+	Cr_VM* vm;
+
+	Cr_Object* class_obj;
+	Cr_Object* superclass_obj;
+
+	unsigned long ref;
 
 	union Cr_Object_Raw {
-		float f32;
-		int   s32;
+		float	      f32;
+		int	      s32;
+		unsigned long section;
 	} raw;
 };
 
@@ -77,20 +83,23 @@ struct Cr_VM {
 	Cr_Thread** threads;
 
 	Cr_ObjectKV* classes;
+
+	Cr_Object** objects;
 };
 
-struct Cr_ThreadRunning {
+struct Cr_CellPosition {
 	unsigned long sp; /* section ptr */
 	unsigned long ip; /* instruction ptr */
 };
 
 struct Cr_Thread {
-	Cr_VM*	   vm;
+	Cr_VM* vm;
+
 	Cr_Thread* parent;
 	Cr_Thread* wait;
 
-	int		  dead;
-	Cr_ThreadRunning* running;
+	int		 dead;
+	Cr_CellPosition* running;
 
 	Cr_Object** stack;
 };
@@ -159,7 +168,7 @@ struct Cr_AST {
 #define CR_OFFSETOF(var, field) ((char*)&(var)->field - (char*)(var))
 
 /* vm.c */
-void	   Cr_Step(Cr_VM* vm);
+int	   Cr_Step(Cr_VM* vm);
 void	   Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32);
 Cr_Object* Cr_GetClass(Cr_VM* vm, const char* name);
 void	   Cr_SetClass(Cr_VM* vm, const char* name, Cr_Object* obj);
@@ -167,7 +176,7 @@ void	   Cr_SetClass(Cr_VM* vm, const char* name, Cr_Object* obj);
 /* thread.c */
 Cr_Thread* Cr_CreateThread(Cr_VM* vm, Cr_Thread* parent, long section);
 void	   Cr_DeleteThread(Cr_Thread* thread);
-void	   Cr_ThreadStep(Cr_Thread* thread);
+int	   Cr_ThreadStep(Cr_Thread* thread);
 
 /* compiler.c */
 void Cr_Compile(Cr_VM* vm, Cr_AST* ast);
