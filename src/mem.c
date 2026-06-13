@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 void* Cr_Alloc(long size) {

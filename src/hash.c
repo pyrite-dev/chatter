@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 unsigned long Cr_Hash(const void* input, long length) {

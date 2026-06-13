@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 Cr_Thread* Cr_CreateThread(Cr_VM* vm, long section) {
@@ -20,4 +21,7 @@ void Cr_DeleteThread(Cr_Thread* thread) {
 
 	Cr_FreeArray(thread->running);
 	Cr_Free(thread);
+}
+
+void Cr_ThreadStep(Cr_Thread* thread) {
 }

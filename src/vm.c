@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 Cr_VM* Cr_CreateVM(long mem) {
@@ -33,6 +34,7 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 	Cr_AST*	      ast = Cr_Parse(script);
 	int	      st  = CR_OK;
 	unsigned long seq = vm->section_seq;
+	Cr_Thread*    th;
 
 	if(ast == CR_NULL) return CR_ERROR;
 
@@ -46,7 +48,15 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 
 	Cr_DeleteAST(ast);
 
-	Cr_CreateThread(vm, seq);
+	th = Cr_CreateThread(vm, seq);
+	while(!th->dead) Cr_Step(vm);
+	Cr_DeleteThread(th);
 
 	return st;
+}
+
+void Cr_Step(Cr_VM* vm) {
+	unsigned long i;
+
+	for(i = 0; i < Cr_ArrayLength(vm->threads); i++) Cr_ThreadStep(vm->threads[i]);
 }

@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 static int compile(Cr_VM* vm, Cr_AST* ast);

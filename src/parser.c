@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 Cr_AST* Cr_Parse(const char* script) {

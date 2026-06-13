@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 int Cr_IsUnary(const char* op) {

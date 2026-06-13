@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 void Cr_Escape(char* dst, const char* src) {

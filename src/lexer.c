@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 #define MATCH(x) ((Cr_Length(str) >= Cr_Length((x))) && Cr_Equal(str, (x), Cr_Length((x))))

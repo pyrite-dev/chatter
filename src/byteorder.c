@@ -1,3 +1,4 @@
+#include <crPrivate.h>
 #include <cr.h>
 
 unsigned int Cr_BigU32(Cr_VM* vm, unsigned int n) {
