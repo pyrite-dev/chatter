@@ -45,7 +45,7 @@ Cr_VM* Cr_CreateVM(void) {
 }
 
 void Cr_DeleteVM(Cr_VM* vm) {
-	unsigned long i;
+	CR_USIZE_T i;
 
 	while(Cr_ArrayLength(vm->threads) > 0) Cr_DeleteThread(vm->threads[0]);
 	Cr_FreeArray(vm->threads);
@@ -66,11 +66,11 @@ void Cr_DeleteVM(Cr_VM* vm) {
 }
 
 int Cr_Eval(Cr_VM* vm, const char* script) {
-	Cr_AST*	      ast = Cr_Parse(script);
-	int	      st  = CR_OK;
-	unsigned long seq = vm->section_seq;
-	Cr_Thread*    th;
-	int	      s;
+	Cr_AST*	   ast = Cr_Parse(script);
+	int	   st  = CR_OK;
+	CR_USIZE_T seq = vm->section_seq;
+	Cr_Thread* th;
+	int	   s;
 
 	if(ast == CR_NULL) return CR_ERROR;
 
@@ -96,14 +96,17 @@ int Cr_Eval(Cr_VM* vm, const char* script) {
 }
 
 int Cr_Step(Cr_VM* vm) {
-	unsigned long i;
-	int	      s;
+	CR_USIZE_T i;
+	int	   s;
 
 	for(i = 0; i < Cr_ArrayLength(vm->threads); i++) {
 		if((s = Cr_ThreadStep(vm->threads[i])) == CR_ERROR) {
+			Cr_GC(vm);
 			return CR_ERROR;
 		}
 	}
+
+	Cr_GC(vm);
 
 	return CR_OK;
 }

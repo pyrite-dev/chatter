@@ -15,6 +15,10 @@
 #define CR_ATOI atoi
 #define CR_ATOF atof
 
+#define CR_SIZE_T long
+#define CR_USIZE_T unsigned long
+#define CR_HASH_T unsigned long
+
 #define CR_MEMSET memset
 #define CR_MEMCPY memcpy
 

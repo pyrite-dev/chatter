@@ -1,7 +1,7 @@
 #include <crPrivate.h>
 #include <cr.h>
 
-Cr_Thread* Cr_CreateThread(Cr_VM* vm, Cr_Thread* parent, long section) {
+Cr_Thread* Cr_CreateThread(Cr_VM* vm, Cr_Thread* parent, CR_USIZE_T section) {
 	Cr_Thread*	thread = Cr_Alloc(sizeof(*thread));
 	Cr_CellPosition r;
 
@@ -125,6 +125,8 @@ int Cr_ThreadStep(Cr_Thread* thread) {
 			}
 
 			args[d24 - i - 1] = thread->stack[n];
+
+			if(thread->stack[n]->ref > 0) thread->stack[n]->ref--;
 
 			Cr_ArrayDelete(thread->stack, n);
 		}

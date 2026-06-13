@@ -1,10 +1,10 @@
 #include <crPrivate.h>
 #include <cr.h>
 
-unsigned long Cr_Hash(const void* input, long length) {
-	unsigned long	     hash = 5381;
+CR_HASH_T Cr_Hash(const void* input, CR_SIZE_T length) {
+	CR_HASH_T	     hash = 5381;
 	const unsigned char* in	  = input;
-	long		     i;
+	CR_SIZE_T	     i;
 
 	for(i = 0; i < length; i++) hash = ((hash << 5) + hash) + in[i];
 

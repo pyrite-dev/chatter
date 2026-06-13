@@ -10,8 +10,8 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, Cr_Section* section) {
 	case CR_P_GROUP:
 	case CR_P_ASSIGN:
 	{
-		int i;
-		int op = 0;
+		CR_SIZE_T i;
+		int	  op = 0;
 
 		for(i = 0; i < Cr_ArrayLength(ast->children); i++) {
 			Cr_AST* c = ast->children[i];
@@ -53,7 +53,7 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, Cr_Section* section) {
 		Cr_Cell c;
 
 		if(ast->sub == CR_L_NUMBER) {
-			int i;
+			CR_SIZE_T i;
 
 			c.u32  = 0;
 			c.i.op = CR_VM_INT;
@@ -90,9 +90,9 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, Cr_Section* section) {
 	case CR_P_ARRAY:
 	case CR_P_BYTE_ARRAY:
 	{
-		Cr_Cell c;
-		int	n;
-		int	i;
+		Cr_Cell	  c;
+		int	  n;
+		CR_SIZE_T i;
 
 		c.u32 = 0;
 		switch(ast->type) {

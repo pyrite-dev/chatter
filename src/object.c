@@ -50,7 +50,7 @@ Cr_Object* Cr_NewFloatObj(Cr_VM* vm, float v) {
 	return obj;
 }
 
-Cr_Object* Cr_NewBlockObj(Cr_VM* vm, unsigned long block) {
+Cr_Object* Cr_NewBlockObj(Cr_VM* vm, CR_USIZE_T block) {
 	Cr_Object* obj = allocObj(vm);
 
 	obj->class_obj	 = Cr_GetClass(vm, "Block");

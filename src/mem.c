@@ -1,7 +1,7 @@
 #include <crPrivate.h>
 #include <cr.h>
 
-void* Cr_Alloc(long size) {
+void* Cr_Alloc(CR_SIZE_T size) {
 #ifdef CR_CALLOC
 	return CR_CALLOC(1, size);
 #else
@@ -17,15 +17,15 @@ void Cr_Free(void* ptr) {
 	CR_FREE(ptr);
 }
 
-void Cr_Copy(void* dst, const void* src, long size) {
+void Cr_Copy(void* dst, const void* src, CR_SIZE_T size) {
 	CR_MEMCPY(dst, src, size);
 }
 
-int Cr_Equal(const void* a, const void* b, long size) {
+int Cr_Equal(const void* a, const void* b, CR_SIZE_T size) {
 #ifdef CR_MEMCMP
 	return memcmp(a, b, size) == 0;
 #else
-	long		     i;
+	CR_SIZE_T	     i;
 	const unsigned char* ba = a;
 	const unsigned char* bb = b;
 

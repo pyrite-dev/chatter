@@ -11,7 +11,7 @@
 	}
 
 Cr_Token* Cr_Lex(const char* str) {
-	int	  i;
+	CR_SIZE_T i;
 	Cr_Token* t = CR_NULL;
 
 	if(Cr_Length(str) == 0) return t;

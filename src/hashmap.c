@@ -4,12 +4,12 @@
 #define INITIAL_CAPACITY 8
 
 struct hashmapinfo {
-	unsigned long  capacity;
-	long	       length;
-	unsigned long* indices;
+	CR_USIZE_T  capacity;
+	CR_SIZE_T   length;
+	CR_USIZE_T* indices;
 };
 
-void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long kstart, long ksize, long ustart, long cstart) {
+void* Cr_HashMapGetInternal(void* hashmap, CR_SIZE_T size, const void* key, CR_SIZE_T kstart, CR_SIZE_T ksize, CR_SIZE_T ustart, CR_SIZE_T cstart) {
 	struct hashmapinfo* hi = hashmap;
 	unsigned char*	    mem;
 	long		    ind;
@@ -37,12 +37,12 @@ void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long ksta
 	return mem;
 }
 
-void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long kstart, long ksize, const void* value, long vstart, long vsize, long ustart, long usize, long cstart) {
+void* Cr_HashMapPutInternal(void* hashmap, CR_SIZE_T size, const void* key, CR_SIZE_T kstart, CR_SIZE_T ksize, const void* value, CR_SIZE_T vstart, CR_SIZE_T vsize, CR_SIZE_T ustart, CR_SIZE_T usize, CR_SIZE_T cstart) {
 	struct hashmapinfo* hi;
 	unsigned char*	    mem;
 	unsigned char*	    mem2;
-	unsigned long	    ind;
-	long		    i, j;
+	CR_USIZE_T	    ind;
+	CR_SIZE_T	    i, j;
 	const void*	    n = CR_NULL;
 
 	if(hashmap == CR_NULL) {
@@ -145,11 +145,11 @@ void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long ksta
 	return hi + 1;
 }
 
-long Cr_HashMapLengthInternal(void* hashmap, long size, long ustart, long cstart) {
+CR_SIZE_T Cr_HashMapLengthInternal(void* hashmap, CR_SIZE_T size, CR_SIZE_T ustart, CR_SIZE_T cstart) {
 	struct hashmapinfo* hi	= hashmap;
 	unsigned char*	    mem = hashmap;
-	long		    i	= 0;
-	long		    l	= 0;
+	CR_SIZE_T	    i	= 0;
+	CR_SIZE_T	    l	= 0;
 	const void*	    n	= CR_NULL;
 
 	if(hashmap == CR_NULL) return 0;
@@ -172,12 +172,12 @@ long Cr_HashMapLengthInternal(void* hashmap, long size, long ustart, long cstart
 	return l;
 }
 
-void* Cr_HashMapGetAllInternal(void* hashmap, long size, long ustart, long cstart) {
+void* Cr_HashMapGetAllInternal(void* hashmap, CR_SIZE_T size, CR_SIZE_T ustart, CR_SIZE_T cstart) {
 	struct hashmapinfo* hi	= hashmap;
 	unsigned char*	    r	= CR_NULL;
 	unsigned char*	    mem = hashmap;
-	long		    i	= 0;
-	long		    l	= 0;
+	CR_SIZE_T	    i	= 0;
+	CR_SIZE_T	    l	= 0;
 	const void*	    n	= CR_NULL;
 
 	if(hashmap == CR_NULL) return CR_NULL;

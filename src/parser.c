@@ -142,8 +142,6 @@ Cr_AST* Cr_Parse(const char* script) {
 			Cr_AST* new_ast;
 			Cr_AST* new_item;
 
-			Cr_Debug("%d\n", current->type);
-
 			new_ast		= CR_NEW_AST;
 			new_ast->type	= CR_P_LOCAL;
 			new_ast->parent = current;

@@ -26,7 +26,7 @@ Cr_Object* Cr_NewObj(Cr_VM* vm);
 Cr_Object* Cr_NewClassObj(Cr_VM* vm, Cr_Object* superclass_obj, const char* name);
 Cr_Object* Cr_NewIntObj(Cr_VM* vm, int v);
 Cr_Object* Cr_NewFloatObj(Cr_VM* vm, float v);
-Cr_Object* Cr_NewBlockObj(Cr_VM* vm, unsigned long block);
+Cr_Object* Cr_NewBlockObj(Cr_VM* vm, CR_USIZE_T block);
 void	   Cr_NewMethod(Cr_VM* vm, const char* name, void* userdata, Cr_Method method);
 void	   Cr_DeleteObj(Cr_Object* obj);
 

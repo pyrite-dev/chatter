@@ -1,22 +1,32 @@
 #include <crPrivate.h>
 #include <cr.h>
 
+#ifdef DEBUG
+#define MAKE_VALGRIND_QUIET
+#endif
+
+#ifdef MAKE_VALGRIND_QUIET
+#define N 1
+#else
+#define N 0
+#endif
+
 struct arrayinfo {
-	long esize;  /* element size */
-	long length; /* length */
+	CR_SIZE_T esize;  /* element size */
+	CR_SIZE_T length; /* length */
 };
 
-void* Cr_ArrayGrow(void* array, long size) {
+void* Cr_ArrayGrow(void* array, CR_SIZE_T size) {
 	struct arrayinfo* ai;
 	if(array == CR_NULL) {
-		ai	   = Cr_Alloc(sizeof(*ai) + size);
+		ai	   = Cr_Alloc(sizeof(*ai) + size * (N + 1));
 		ai->esize  = size;
 		ai->length = 1;
 	} else {
 		struct arrayinfo* old = array;
 		old--;
 
-		ai = Cr_Alloc(sizeof(*ai) + old->esize * old->length + size);
+		ai = Cr_Alloc(sizeof(*ai) + old->esize * old->length + size * (N + 1));
 		Cr_Copy(ai, old, sizeof(*ai) + old->esize * old->length);
 
 		ai->length++;
@@ -27,10 +37,10 @@ void* Cr_ArrayGrow(void* array, long size) {
 	return ai + 1;
 }
 
-void* Cr_ArrayGrowFrom(void* array, long index, long size) {
-	long  i	  = 0;
-	long  l	  = Cr_ArrayLength(array);
-	void* old = CR_NULL;
+void* Cr_ArrayGrowFrom(void* array, CR_SIZE_T index, CR_SIZE_T size) {
+	CR_SIZE_T i   = 0;
+	CR_SIZE_T l   = Cr_ArrayLength(array);
+	void*	  old = CR_NULL;
 
 	if(l > 0) {
 		old = Cr_Alloc(l * size);
@@ -49,7 +59,7 @@ void* Cr_ArrayGrowFrom(void* array, long index, long size) {
 	return array;
 }
 
-long Cr_ArrayLength(void* array) {
+CR_SIZE_T Cr_ArrayLength(void* array) {
 	struct arrayinfo* ai = array;
 
 	if(array == CR_NULL) return 0;
@@ -58,16 +68,16 @@ long Cr_ArrayLength(void* array) {
 	return ai->length;
 }
 
-void* Cr_ArrayDeleteInternal(void* array, long index) {
+void* Cr_ArrayDeleteInternal(void* array, CR_SIZE_T index) {
 	struct arrayinfo* old = array;
 	struct arrayinfo* ai;
-	long		  i;
-	long		  n = 0;
+	CR_SIZE_T	  i;
+	CR_SIZE_T	  n = 0;
 
 	if(array == CR_NULL) return CR_NULL;
 	old--;
 
-	ai = Cr_Alloc(sizeof(*ai) + (old->length - 1) * old->esize);
+	ai = Cr_Alloc(sizeof(*ai) + (old->length - 1 + N) * old->esize);
 	Cr_Copy(ai, old, sizeof(*ai));
 
 	for(i = 0; i < ai->length; i++) {
@@ -86,9 +96,9 @@ void* Cr_ArrayDeleteInternal(void* array, long index) {
 
 void* Cr_ArrayDeleteMatchInternal(void* array, void* element) {
 	struct arrayinfo* ai = array;
-	long		  esize;
+	CR_SIZE_T	  esize;
 	unsigned char*	  b = array;
-	long		  i;
+	CR_SIZE_T	  i;
 
 	if(array == CR_NULL) return CR_NULL;
 	ai--;
