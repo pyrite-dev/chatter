@@ -205,6 +205,7 @@ Cr_AST* Cr_Parse(const char* script) {
 
 				new_ast	      = CR_NEW_AST;
 				new_ast->type = CR_P_ITEM;
+				new_ast->sub  = ts[i]->type;
 				Cr_Copy(new_ast->token, ts[i]->token, Cr_Length(ts[i]->token));
 				new_ast->parent = current;
 

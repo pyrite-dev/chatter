@@ -7,7 +7,7 @@ struct section {
 	Cr_Cell*      cells;
 };
 
-static void compile(Cr_VM* vm, Cr_AST* ast, section_t** sections);
+static int compile(Cr_VM* vm, Cr_AST* ast, section_t** sections);
 
 static void compile_section(Cr_VM* vm, Cr_AST* ast, section_t** sections, section_t* section) {
 	switch(ast->type) {
@@ -44,17 +44,60 @@ static void compile_section(Cr_VM* vm, Cr_AST* ast, section_t** sections, sectio
 	}
 	case CR_P_ITEM:
 	{
+		Cr_Cell c;
+
+		if(ast->sub == CR_L_NUMBER) {
+			int i;
+
+			c.u32  = 0;
+			c.i.op = CR_VM_INT;
+
+			for(i = 0; ast->token[i] != 0; i++) {
+				if(ast->token[i] == '.') {
+					c.i.op = CR_VM_FLOAT;
+					break;
+				}
+			}
+
+			Cr_ArrayPut(section->cells, c);
+
+			if(c.i.op == CR_VM_INT) c.s32 = Cr_BigS32(vm, CR_ATOI(ast->token));
+			if(c.i.op == CR_VM_FLOAT) c.f32 = Cr_BigF32(vm, CR_ATOF(ast->token));
+			Cr_ArrayPut(section->cells, c);
+		} else if(ast->sub == CR_L_IDENT) {
+			unsigned long n = Cr_Hash(ast->token, Cr_Length(ast->token));
+
+			c.u32  = 0;
+			c.i.op = CR_VM_VAR;
+			Cr_ArrayPut(section->cells, c);
+
+			c.u32 = Cr_BigU32(vm, (n >> 32) & 0xffffffff);
+			Cr_ArrayPut(section->cells, c);
+
+			c.u32 = Cr_BigU32(vm, (n >> 0) & 0xffffffff);
+			Cr_ArrayPut(section->cells, c);
+		}
+
 		break;
 	}
 	case CR_P_BLOCK:
 	{
-		compile(vm, ast, sections);
+		Cr_Cell c;
+		int	n = compile(vm, ast, sections);
+
+		c.u32  = 0;
+		c.i.op = CR_VM_BLOCK;
+		c.i.a1 = (n >> 16) & 0xff;
+		c.i.a2 = (n >> 8) & 0xff;
+		c.i.a3 = (n >> 0) & 0xff;
+		Cr_ArrayPut(section->cells, c);
+
 		break;
 	}
 	}
 }
 
-static void compile(Cr_VM* vm, Cr_AST* ast, section_t** sections) {
+static int compile(Cr_VM* vm, Cr_AST* ast, section_t** sections) {
 	int	  i;
 	section_t s;
 	Cr_Cell	  c;
@@ -73,6 +116,8 @@ static void compile(Cr_VM* vm, Cr_AST* ast, section_t** sections) {
 	Cr_ArrayPut(s.cells, c);
 
 	Cr_ArrayPut(*sections, s);
+
+	return s.name;
 }
 
 void Cr_Compile(Cr_VM* vm, Cr_AST* ast) {

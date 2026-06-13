@@ -13,7 +13,11 @@ typedef struct Cr_AST		  Cr_AST;
 enum CR_VM_OP {
 	CR_VM_NOP = 0,
 	CR_VM_RET,
-	CR_VM_CALL
+	CR_VM_CALL,
+	CR_VM_INT,
+	CR_VM_FLOAT,
+	CR_VM_VAR,
+	CR_VM_BLOCK
 };
 
 struct Cr_VM {
@@ -21,7 +25,7 @@ struct Cr_VM {
 
 	Cr_Cell* mem;
 	long	 memsize;
-	long	 section_seq;
+	int	 section_seq;
 
 	struct Cr_Object** stack;
 };
@@ -89,6 +93,7 @@ enum CR_PARSER_TOKEN {
 
 struct Cr_AST {
 	int	 type;
+	int	 sub;
 	char	 token[CR_TOKSZ + 1];
 	Cr_AST*	 parent;
 	Cr_AST** children;
@@ -146,6 +151,7 @@ int   Cr_Equal(const void* a, const void* b, long size);
 /* byteorder.c */
 unsigned int Cr_BigU32(Cr_VM* vm, unsigned int n);
 int	     Cr_BigS32(Cr_VM* vm, int n);
+float	     Cr_BigF32(Cr_VM* vm, float n);
 
 /* string.c */
 void Cr_Escape(char* dst, const char* src);

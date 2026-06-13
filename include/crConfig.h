@@ -12,6 +12,9 @@
 /* if your platform is missing calloc, define this */
 /* #define CR_MALLOC malloc */
 
+#define CR_ATOI atoi
+#define CR_ATOF atof
+
 #define CR_MEMSET memset
 #define CR_MEMCPY memcpy
 
