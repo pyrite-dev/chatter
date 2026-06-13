@@ -43,3 +43,9 @@ void Cr_Concat(char* dst, const char* src) {
 	}
 	dst[s + i] = 0;
 }
+
+int Cr_EqualString(const char* a, const char* b) {
+	if(Cr_Length(a) != Cr_Length(b)) return 0;
+
+	return Cr_Equal(a, b, Cr_Length(a));
+}

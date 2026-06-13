@@ -145,13 +145,64 @@ void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long ksta
 	return hi + 1;
 }
 
-long Cr_HashMapLength(void* hashmap) {
-	struct hashmapinfo* hi = hashmap;
+long Cr_HashMapLengthInternal(void* hashmap, long size, long ustart, long cstart) {
+	struct hashmapinfo* hi	= hashmap;
+	unsigned char*	    mem = hashmap;
+	long		    i	= 0;
+	long		    l	= 0;
+	const void*	    n	= CR_NULL;
 
 	if(hashmap == CR_NULL) return 0;
 	hi--;
 
-	return hi->length;
+	for(i = 0; i < hi->length; i++) {
+		while(mem[ustart]) {
+			l++;
+
+			if(Cr_Equal(mem + cstart, &n, sizeof(n))) {
+				break;
+			}
+
+			mem = *(unsigned char**)&mem[cstart];
+		}
+
+		mem += size;
+	}
+
+	return l;
+}
+
+void* Cr_HashMapGetAllInternal(void* hashmap, long size, long ustart, long cstart) {
+	struct hashmapinfo* hi	= hashmap;
+	unsigned char*	    r	= CR_NULL;
+	unsigned char*	    mem = hashmap;
+	long		    i	= 0;
+	long		    l	= 0;
+	const void*	    n	= CR_NULL;
+
+	if(hashmap == CR_NULL) return CR_NULL;
+	if((l = Cr_HashMapLengthInternal(hashmap, size, ustart, cstart)) == 0) return CR_NULL;
+
+	r = Cr_Alloc(l * size);
+	l = 0;
+
+	hi--;
+
+	for(i = 0; i < hi->length; i++) {
+		while(mem[ustart]) {
+			Cr_Copy(&r[(l++) * size], mem, size);
+
+			if(Cr_Equal(mem + cstart, &n, sizeof(n))) {
+				break;
+			}
+
+			mem = *(unsigned char**)&mem[cstart];
+		}
+
+		mem += size;
+	}
+
+	return r;
 }
 
 void Cr_FreeHashMapInternal(void* hashmap) {

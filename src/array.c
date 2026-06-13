@@ -58,15 +58,6 @@ long Cr_ArrayLength(void* array) {
 	return ai->length;
 }
 
-void Cr_FreeArrayInternal(void* array) {
-	struct arrayinfo* ai = array;
-
-	if(array == CR_NULL) return;
-	ai--;
-
-	Cr_Free(ai);
-}
-
 void* Cr_ArrayDeleteInternal(void* array, long index) {
 	struct arrayinfo* old = array;
 	struct arrayinfo* ai;
@@ -116,4 +107,13 @@ void* Cr_ArrayDeleteMatchInternal(void* array, void* element) {
 	}
 
 	return array;
+}
+
+void Cr_FreeArrayInternal(void* array) {
+	struct arrayinfo* ai = array;
+
+	if(array == CR_NULL) return;
+	ai--;
+
+	Cr_Free(ai);
 }

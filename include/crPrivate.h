@@ -6,12 +6,25 @@
 typedef struct Cr_InstructionCell Cr_InstructionCell;
 typedef union Cr_Cell		  Cr_Cell;
 typedef struct Cr_Section	  Cr_Section;
+typedef struct Cr_Object	  Cr_Object;
+typedef struct Cr_ObjectKV	  Cr_ObjectKV;
 typedef struct Cr_VM		  Cr_VM;
 typedef struct Cr_ThreadRunning	  Cr_ThreadRunning;
 typedef struct Cr_Thread	  Cr_Thread;
-typedef struct Cr_Object	  Cr_Object;
 typedef struct Cr_Token		  Cr_Token;
 typedef struct Cr_AST		  Cr_AST;
+
+#define CR_NEW_HASHMAP(x, y) \
+	struct x { \
+		y unsigned char used; \
+		void*		chain; \
+		union x##_Union { \
+			void*	   ptr; \
+			void**	   pptr; \
+			struct x*  casted; \
+			struct x** pcasted; \
+		} temp; \
+	}
 
 enum CR_VM_OP {
 	CR_VM_NOP = 0,
@@ -42,19 +55,18 @@ union Cr_Cell {
 	float		   f32;
 };
 
-struct Cr_Section {
-	unsigned long key;
-	Cr_Cell*      value;
+CR_NEW_HASHMAP(Cr_Section, unsigned long key; Cr_Cell * value;);
 
-	unsigned char used;
-	void*	      chain;
-	union Cr_Section_union {
-		void*	     ptr;
-		void*	     pptr;
-		Cr_Section*  casted;
-		Cr_Section** pcasted;
-	} temp;
+struct Cr_Object {
+	Cr_Object* meta;
+
+	union Cr_Object_Raw {
+		float f32;
+		int   s32;
+	} raw;
 };
+
+CR_NEW_HASHMAP(Cr_ObjectKV, unsigned long key; Cr_Object * value;);
 
 struct Cr_VM {
 	int big;
@@ -63,6 +75,8 @@ struct Cr_VM {
 	int	    section_seq;
 
 	Cr_Thread** threads;
+
+	Cr_ObjectKV* classes;
 };
 
 struct Cr_ThreadRunning {
@@ -71,15 +85,14 @@ struct Cr_ThreadRunning {
 };
 
 struct Cr_Thread {
-	Cr_VM* vm;
+	Cr_VM*	   vm;
+	Cr_Thread* parent;
+	Cr_Thread* wait;
 
 	int		  dead;
 	Cr_ThreadRunning* running;
 
-	struct Cr_Object** stack;
-};
-
-struct Cr_Object {
+	Cr_Object** stack;
 };
 
 enum CR_LEXER_TOKEN {
@@ -146,11 +159,13 @@ struct Cr_AST {
 #define CR_OFFSETOF(var, field) ((char*)&(var)->field - (char*)(var))
 
 /* vm.c */
-void Cr_Step(Cr_VM* vm);
-void Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32);
+void	   Cr_Step(Cr_VM* vm);
+void	   Cr_GetArgs(Cr_Cell* cell, int* n8, int* n32);
+Cr_Object* Cr_GetClass(Cr_VM* vm, const char* name);
+void	   Cr_SetClass(Cr_VM* vm, const char* name, Cr_Object* obj);
 
 /* thread.c */
-Cr_Thread* Cr_CreateThread(Cr_VM* vm, long section);
+Cr_Thread* Cr_CreateThread(Cr_VM* vm, Cr_Thread* parent, long section);
 void	   Cr_DeleteThread(Cr_Thread* thread);
 void	   Cr_ThreadStep(Cr_Thread* thread);
 
@@ -182,6 +197,7 @@ void Cr_Escape(char* dst, const char* src);
 void Cr_EscapeConcat(char* dst, const char* src);
 int  Cr_Length(const char* ptr);
 void Cr_Concat(char* dst, const char* src);
+int  Cr_EqualString(const char* a, const char* b);
 
 /* op.c */
 int Cr_IsUnary(const char* op);
@@ -213,11 +229,6 @@ unsigned long Cr_Hash(const void* input, long length);
 		(x)	 = Cr_ArrayGrowFrom((x), (y), sizeof(*x)); \
 		(x)[(y)] = (z); \
 	}
-#define Cr_FreeArray(x) \
-	{ \
-		Cr_FreeArrayInternal((x)); \
-		(x) = CR_NULL; \
-	}
 #define Cr_ArrayDelete(x, i) \
 	{ \
 		(x) = Cr_ArrayDeleteInternal((x), (i)); \
@@ -226,27 +237,20 @@ unsigned long Cr_Hash(const void* input, long length);
 	{ \
 		(x) = Cr_ArrayDeleteMatchInternal((x), &(e)); \
 	}
+#define Cr_FreeArray(x) \
+	{ \
+		Cr_FreeArrayInternal((x)); \
+		(x) = CR_NULL; \
+	}
 
 void* Cr_ArrayGrow(void* array, long size);		    /* do not use this */
 void* Cr_ArrayGrowFrom(void* array, long index, long size); /* do not use this */
 long  Cr_ArrayLength(void* array);
-void  Cr_FreeArrayInternal(void* array);		       /* do not use this, use Cr_FreeArray instead */
 void* Cr_ArrayDeleteInternal(void* array, long index);	       /* do not use this, use Cr_ArrayDelete instead */
 void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use this, use Cr_ArrayDeleteMatch instead */
+void  Cr_FreeArrayInternal(void* array);		       /* do not use this, use Cr_FreeArray instead */
 
 /* hashmap.c */
-#define CR_NEW_HASHMAP(x, y) \
-	struct x { \
-		y unsigned char used; \
-		void*		chain; \
-		union x##_union { \
-			void*	   ptr; \
-			void*	   pptr; \
-			struct x*  casted; \
-			struct x** pcasted; \
-		} temp; \
-	}
-
 #define Cr_HashMapGet(x, y) ( \
     (x)->temp.ptr = Cr_HashMapGetInternal((x), sizeof(*(x)), &(y), CR_OFFSETOF((x), key), sizeof((x)->key), CR_OFFSETOF((x), used), CR_OFFSETOF((x), chain)), \
     (x)->temp.casted)
@@ -258,15 +262,21 @@ void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use thi
 	{ \
 		Cr_HashMapPut((x), (y).key, (y).value); \
 	}
+#define Cr_HashMapGetAll(x) ( \
+    (x)->temp.ptr = Cr_HashMapGetAllInternal((x), sizeof(*(x)), CR_OFFSETOF((x), used), CR_OFFSETOF((x), chain)), \
+    (x)->temp.casted) /* Cr_Free this */
+#define Cr_HashMapLength(x) ( \
+    Cr_HashMapLengthInternal((x), sizeof(*(x)), CR_OFFSETOF((x), used), CR_OFFSETOF((x), chain)))
 #define Cr_FreeHashMap(x) \
 	{ \
 		Cr_FreeHashMapInternal((x)); \
 		(x) = CR_NULL; \
 	}
 
-void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long kstart, long ksize, long ustart, long cstart);							   /* do not use this, use Cr_HashMapGet */
-void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long kstart, long ksize, const void* value, long vstart, long vsize, long ustart, long usize, long cstart); /* do not use this, use Cr_HashMapPut */
-long  Cr_HashMapLength(void* hashmap);
-void  Cr_FreeHashMapInternal(void* hashmap); /* do not use this, use Cr_FreeHashMap instead */
+void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long kstart, long ksize, long ustart, long cstart);							   /* do not use this, use Cr_HashMapGet instead */
+void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long kstart, long ksize, const void* value, long vstart, long vsize, long ustart, long usize, long cstart); /* do not use this, use Cr_HashMapPut instead */
+long  Cr_HashMapLengthInternal(void* hashmap, long size, long ustart, long cstart);												   /* do not use this, use Cr_HashMapLength instead */
+void* Cr_HashMapGetAllInternal(void* hashmap, long size, long ustart, long cstart);												   /* do not use this, use Cr_HashMapGetAll instead */
+void  Cr_FreeHashMapInternal(void* hashmap);																	   /* do not use this, use Cr_FreeHashMap instead */
 
 #endif
