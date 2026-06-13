@@ -229,9 +229,9 @@ unsigned long Cr_Hash(const void* input, long length);
 		(x)	 = Cr_ArrayGrowFrom((x), (y), sizeof(*x)); \
 		(x)[(y)] = (z); \
 	}
-#define Cr_ArrayFree(x) \
+#define Cr_FreeArray(x) \
 	{ \
-		Cr_ArrayFreeInternal((x)); \
+		Cr_FreeArrayInternal((x)); \
 		(x) = CR_NULL; \
 	}
 #define Cr_ArrayDelete(x, i) \
@@ -246,7 +246,7 @@ unsigned long Cr_Hash(const void* input, long length);
 void* Cr_ArrayGrow(void* array, long size);		    /* do not use this */
 void* Cr_ArrayGrowFrom(void* array, long index, long size); /* do not use this */
 long  Cr_ArrayLength(void* array);
-void  Cr_ArrayFreeInternal(void* array);		       /* do not use this, use Cr_ArrayFree instead */
+void  Cr_FreeArrayInternal(void* array);		       /* do not use this, use Cr_FreeArray instead */
 void* Cr_ArrayDeleteInternal(void* array, long index);	       /* do not use this, use Cr_ArrayDelete instead */
 void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use this, use Cr_ArrayDeleteMatch instead */
 
@@ -274,15 +274,15 @@ void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use thi
 	{ \
 		Cr_HashMapPut((x), (y).key, (y).value); \
 	}
-#define Cr_HashMapFree(x) \
+#define Cr_FreeHashMap(x) \
 	{ \
-		Cr_HashMapDestroy((x)); \
+		Cr_FreeHashMapInternal((x)); \
 		(x) = CR_NULL; \
 	}
 
 void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long kstart, long ksize, long ustart, long cstart);							   /* do not use this, use Cr_HashMapGet */
 void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long kstart, long ksize, const void* value, long vstart, long vsize, long ustart, long usize, long cstart); /* do not use this, use Cr_HashMapPut */
 long  Cr_HashMapLength(void* hashmap);
-void  Cr_HashMapDestroy(void* hashmap); /* do not use this, use Cr_HashMapFree instead */
+void  Cr_FreeHashMapInternal(void* hashmap); /* do not use this, use Cr_FreeHashMap instead */
 
 #endif

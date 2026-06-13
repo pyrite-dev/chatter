@@ -57,7 +57,7 @@ long Cr_ArrayLength(void* array) {
 	return ai->length;
 }
 
-void Cr_ArrayFreeInternal(void* array) {
+void Cr_FreeArrayInternal(void* array) {
 	struct arrayinfo* ai = array;
 
 	if(array == CR_NULL) return;

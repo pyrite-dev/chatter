@@ -104,7 +104,7 @@ void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long ksta
 				} while(mem != CR_NULL);
 			}
 
-			Cr_ArrayFree(old->indices);
+			Cr_FreeArray(old->indices);
 			Cr_Free(old);
 		} else {
 			hi = hashmap;
@@ -153,12 +153,12 @@ long Cr_HashMapLength(void* hashmap) {
 	return hi->length;
 }
 
-void Cr_HashMapDestroy(void* hashmap) {
+void Cr_FreeHashMapInternal(void* hashmap) {
 	struct hashmapinfo* hi = hashmap;
 
 	if(hashmap == CR_NULL) return;
 	hi--;
 
-	Cr_ArrayFree(hi->indices);
+	Cr_FreeArray(hi->indices);
 	Cr_Free(hi);
 }

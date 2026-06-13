@@ -16,14 +16,14 @@ void Cr_DeleteVM(Cr_VM* vm) {
 	unsigned long i;
 
 	while(Cr_ArrayLength(vm->threads) > 0) Cr_DeleteThread(vm->threads[0]);
-	Cr_ArrayFree(vm->threads);
+	Cr_FreeArray(vm->threads);
 
 	for(i = 0; i < vm->section_seq; i++) {
 		Cr_Section* s = Cr_HashMapGet(vm->sections, i);
 
-		Cr_ArrayFree(s->value);
+		Cr_FreeArray(s->value);
 	}
-	Cr_HashMapFree(vm->sections);
+	Cr_FreeHashMap(vm->sections);
 
 	Cr_Free(vm->mem);
 	Cr_Free(vm);

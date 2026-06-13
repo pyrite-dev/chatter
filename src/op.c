@@ -157,7 +157,7 @@ int Cr_SortAndCleanMsgRecv(Cr_AST* ast) {
 			Cr_AST* oldparent = ast->parent;
 
 			old = ast->children[0];
-			Cr_ArrayFree(ast->children);
+			Cr_FreeArray(ast->children);
 
 			Cr_Copy(ast, old, sizeof(*ast));
 			Cr_Free(old);

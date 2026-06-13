@@ -219,7 +219,7 @@ Cr_AST* Cr_Parse(const char* script) {
 		}
 
 		if(consumed) {
-			Cr_ArrayFree(ts);
+			Cr_FreeArray(ts);
 		}
 
 	skip:;
@@ -234,12 +234,12 @@ Cr_AST* Cr_Parse(const char* script) {
 
 	Cr_Debug("parser: missed %d tokens\n", Cr_ArrayLength(ts));
 
-	Cr_ArrayFree(ts);
+	Cr_FreeArray(ts);
 
 	for(i = 0; i < Cr_ArrayLength(fl); i++) {
 		Cr_Free(fl[i]);
 	}
-	Cr_ArrayFree(fl);
+	Cr_FreeArray(fl);
 
 	if(bad) {
 		Cr_Debug("parser: error\n");
@@ -254,7 +254,7 @@ void Cr_DeleteAST(Cr_AST* root) {
 	while(Cr_ArrayLength(root->children) > 0) {
 		Cr_DeleteAST(root->children[0]);
 	}
-	Cr_ArrayFree(root->children);
+	Cr_FreeArray(root->children);
 
 	if(root->parent != CR_NULL) Cr_ArrayDeleteMatch(root->parent->children, root);
 
