@@ -172,13 +172,23 @@ void Cr_DebugCells(Cr_VM* vm, Cr_Cell* cells, long length) {
 			Cr_Concat(inst, s);
 
 			hexU32(inst, Cr_BigU32(vm, cells[i + 1].u32), CR_NULL, CR_NULL);
-		} else if(c->i.op == CR_VM_VAR) {
+		} else if(c->i.op == CR_VM_VAR || c->i.op == CR_VM_LOCAL || c->i.op == CR_VM_SETVAR) {
 			int z = 1, p = 1;
 
 			mcells = 2;
 			s[0]   = 0;
 
-			Cr_Concat(inst, "var ");
+			switch(c->i.op) {
+			case CR_VM_VAR:
+				Cr_Concat(inst, "var ");
+				break;
+			case CR_VM_LOCAL:
+				Cr_Concat(inst, "local ");
+				break;
+			case CR_VM_SETVAR:
+				Cr_Concat(inst, "setvar ");
+				break;
+			}
 
 			if(cells[i + 1].u32) hexU32(inst, Cr_BigU32(vm, cells[i + 1].u32), &z, &p);
 			hexU32(inst, Cr_BigU32(vm, cells[i + 2].u32), &z, &p);

@@ -3,9 +3,12 @@
 
 #include <crConfig.h>
 
-typedef struct Cr_VM		  Cr_VM;
 typedef struct Cr_InstructionCell Cr_InstructionCell;
 typedef union Cr_Cell		  Cr_Cell;
+typedef struct Cr_Section	  Cr_Section;
+typedef struct Cr_VM		  Cr_VM;
+typedef struct Cr_ThreadRunning	  Cr_ThreadRunning;
+typedef struct Cr_Thread	  Cr_Thread;
 typedef struct Cr_Object	  Cr_Object;
 typedef struct Cr_Token		  Cr_Token;
 typedef struct Cr_AST		  Cr_AST;
@@ -17,17 +20,9 @@ enum CR_VM_OP {
 	CR_VM_INT,
 	CR_VM_FLOAT,
 	CR_VM_VAR,
-	CR_VM_BLOCK
-};
-
-struct Cr_VM {
-	int big;
-
-	Cr_Cell* mem;
-	long	 memsize;
-	int	 section_seq;
-
-	struct Cr_Object** stack;
+	CR_VM_BLOCK,
+	CR_VM_LOCAL,
+	CR_VM_SETVAR
 };
 
 struct Cr_InstructionCell {
@@ -43,6 +38,43 @@ union Cr_Cell {
 	unsigned int	   u32;
 	int		   s32;
 	float		   f32;
+};
+
+struct Cr_Section {
+	unsigned long key;
+	Cr_Cell*      value;
+
+	unsigned char used;
+	void*	      chain;
+	union Cr_Section_union {
+		void*	    ptr;
+		Cr_Section* casted;
+	} temp;
+};
+
+struct Cr_VM {
+	int big;
+
+	Cr_Cell* mem;
+	long	 memsize;
+
+	Cr_Section* sections;
+	int	    section_seq;
+
+	Cr_Thread** threads;
+};
+
+struct Cr_ThreadRunning {
+	long sp; /* section ptr */
+	long ip; /* instruction ptr */
+};
+
+struct Cr_Thread {
+	Cr_VM* vm;
+
+	Cr_ThreadRunning** running;
+
+	struct Cr_Object** stack;
 };
 
 struct Cr_Object {
@@ -229,6 +261,10 @@ void* Cr_ArrayDeleteMatchInternal(void* array, void* element); /* do not use thi
 #define Cr_HashMapPut(x, y, z) \
 	{ \
 		(x) = Cr_HashMapPutInternal((x), sizeof(*(x)), &(y), CR_OFFSETOF((x), key), sizeof((x)->key), &(z), CR_OFFSETOF((x), value), sizeof((x)->value), CR_OFFSETOF((x), used), sizeof((x)->used), CR_OFFSETOF((x), chain)); \
+	}
+#define Cr_HashMapPutStruct(x, y) \
+	{ \
+		Cr_HashMapPut((x), (y).key, (y).value); \
 	}
 #define Cr_HashMapFree(x) \
 	{ \

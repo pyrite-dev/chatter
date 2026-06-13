@@ -23,6 +23,8 @@ void* Cr_HashMapGetInternal(void* hashmap, long size, const void* key, long ksta
 
 	mem = &mem[size * ind];
 
+	if(!mem[ustart]) return CR_NULL;
+
 	while(mem[ustart] && !Cr_Equal(mem + kstart, key, ksize)) {
 		if(Cr_Equal(mem + cstart, &n, sizeof(n))) {
 			return CR_NULL;
@@ -82,14 +84,14 @@ void* Cr_HashMapPutInternal(void* hashmap, long size, const void* key, long ksta
 						mem2 = *(unsigned char**)&mem2[cstart];
 					}
 
-					Cr_Debug("%2d: ", old->indices[i]);
+					Cr_Debug("from %2d: ", old->indices[i]);
 					for(j = 0; j < size; j++) Cr_Debug("%02x ", mem[j]);
 					Cr_Debug("\n");
 
 					Cr_Copy(mem2, mem, size);
 					Cr_Copy(mem2 + cstart, &n, sizeof(n));
 
-					Cr_Debug("%2d: ", ind);
+					Cr_Debug("  to %2d: ", ind);
 					for(j = 0; j < size; j++) Cr_Debug("%02x ", mem2[j]);
 					Cr_Debug("\n");
 
